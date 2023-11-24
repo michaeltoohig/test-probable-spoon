@@ -13,12 +13,12 @@ const pwaOptions: Partial<VitePWAOptions> = {
   mode: 'development',
   base: '/',
   includeAssets: ['favicon.svg'],
-  // srcDir: 'src',
-  // filename: 'sw.ts',
+  srcDir: 'src',
+  filename: 'sw.ts',
   strategies: 'injectManifest',
   injectManifest: {
     swSrc: 'src/sw.ts',
-    swDest: 'dev-dist/sw.js',
+    swDest: 'dist/sw.js',
     // globDirectory: 'dist',
     // globPatterns: [
     //   '**/*.{html,js,css,json,png,webp,jpg}',
