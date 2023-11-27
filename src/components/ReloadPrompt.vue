@@ -41,7 +41,6 @@ async function close() {
 </script>
 
 <template>
-  <span>{{ needRefresh }}</span>
   <div
     v-if="offlineReady || needRefresh"
     class="pwa-toast"
