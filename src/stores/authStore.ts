@@ -52,9 +52,9 @@ export const useAuthStore = defineStore('auth', {
     },
     async logout() {
       try {
-        this.user = null;
         await directus.auth.logout();
       } finally {
+        this.user = null;
         // await directus.auth.static(staticToken);
       }
     },
