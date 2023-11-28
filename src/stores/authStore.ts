@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = null;
         await directus.auth.logout();
       } finally {
-        await directus.auth.static(staticToken);
+        // await directus.auth.static(staticToken);
       }
     },
     async getCurrentUser() {

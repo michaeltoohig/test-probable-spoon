@@ -1,5 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { RouterLink } from 'vue-router';
+import { useAuthStore } from '../stores/authStore';
+
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
+
+const avatarSrc = computed(() => {
+  console.log(user.value);
+  if (user.value?.avatar) {
+    return `${import.meta.env.VITE_DIRECTUS_URL}/assets/${user.value.avatar}`;
+  }
+  return 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
+});
 </script>
 
 <template>
@@ -30,7 +44,7 @@ import { RouterLink } from 'vue-router';
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <div class="w-10 rounded-full">
-            <img alt="Tailwind CSS Navbar component" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+            <img alt="Tailwind CSS Navbar component" :src="avatarSrc" />
           </div>
         </div>
         <ul class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-primary rounded-box w-52">
@@ -41,7 +55,7 @@ import { RouterLink } from 'vue-router';
             </a>
           </li>
           <li><a>Settings</a></li>
-          <li><a>Logout</a></li>
+          <li><RouterLink :to="{ name: 'logout' }">Logout</RouterLink></li>
         </ul>
       </div>
     </div>

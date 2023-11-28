@@ -16,7 +16,7 @@
               class="input input-bordered w-full max-w-lg"
             />
             <label v-if="'email' in errors" class="label">
-              <span class="label-text-alt">{{ errors.email }}</span>
+              <span class="label-text-alt text-red-500">{{ errors.email }}</span>
             </label>
           </div>
           <div class="form-control w-full max-w-lg">
@@ -31,7 +31,7 @@
               class="input input-bordered w-full max-w-lg"
             />
             <label v-if="'password' in errors" class="label">
-              <span class="label-text-alt">{{ errors.password }}</span>
+              <span class="label-text-alt text-red-500">{{ errors.password }}</span>
             </label>
           </div>
           <div class="form-control">
@@ -40,17 +40,16 @@
               <input type="checkbox" :checked="remember" class="checkbox" />
             </label>
           </div>
+
+          <div v-if="error" role="alert" class="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>{{ error }}</span>
+          </div>
+          
           <div class="form-control">
             <button type="submit" class="btn btn-primary" :disabled="loading">
               Submit
             </button>
-            {{ loading }}
-          </div>
-
-          <div v-if="error" class="mt-5">
-            <div>
-              <span class="text-red-600 font-semibold">{{ error }}</span>
-            </div>
           </div>
         </form>
       </div>
