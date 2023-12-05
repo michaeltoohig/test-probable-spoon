@@ -22,24 +22,33 @@
 
       <div class="form-control w-full max-w-lg col-span-2">
         <label class="label">
+          <span class="label-text text-lg font-semibold leading-tight">Area</span>
+        </label>
+        <select
+          v-model="area"
+          class="select select-primary w-full max-w-lg"
+        >
+          <option disabled selected>Select an Area!</option>
+          <option v-for="a in areas" :key="a" :value="a">
+            {{ a }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="form-control w-full max-w-lg col-span-2">
+        <label class="label">
           <span class="label-text text-lg font-semibold leading-tight">Location</span>
         </label>
         <select
           v-model="location"
           v-bind="locationAttrs"
+          :disabled="!area"
           class="select select-primary w-full max-w-lg"
         >
-          <option disabled selected>Select a location!</option>
-
-          <optgroup
-            v-for="(groupedLocations, areaName) in groupedLocations"
-            :key="areaName"
-            :label="areaName"
-          >
-            <option v-for="loc in groupedLocations" :key="loc.id" :value="loc.id">
-              {{ loc.name }}
-            </option>
-          </optgroup>
+          <option disabled selected>Select a location from {{ area }}!</option>
+          <option v-for="loc in areaLocations" :key="loc.id" :value="loc.id">
+            {{ loc.name }}
+          </option>
         </select>
         <label v-if="'location' in errors" class="label">
           <span class="label-text-alt text-red-500">{{ errors.location }}</span>
@@ -163,19 +172,29 @@ directus
   .then((resp: any) => {
     locations.value = resp.data;
   });
-const groupedLocations = computed(() => {
-  return locations.value.reduce(
-    (grouped: { [key: string]: Array<{ id: string; name: string }> }, location) => {
-      const key = location.area.name;
-      if (!grouped[key]) {
-        grouped[key] = [];
-      }
-      grouped[key].push(location);
-      return grouped;
-    },
-    {}
-  );
-});
+
+const area = ref(null);
+const areas = computed(() => {
+  if (!locations.value) return []
+  return Array.from(new Set(locations.value.map((loc) => loc.area.name)))
+})
+const areaLocations = computed(() => {
+  if (!area.value) return []
+  return locations.value.filter((loc) => loc.area.name === area.value)
+})
+// const groupedLocations = computed(() => {
+//   return locations.value.reduce(
+//     (grouped: { [key: string]: Array<{ id: string; name: string }> }, location) => {
+//       const key = location.area.name;
+//       if (!grouped[key]) {
+//         grouped[key] = [];
+//       }
+//       grouped[key].push(location);
+//       return grouped;
+//     },
+//     {}
+//   );
+// });
 
 // Setup form validation
 
@@ -268,16 +287,6 @@ const { value: date_reported } = register('date_reported', {
     }
   },
 });
-// const { value: time } = register('time', {
-//   validate(value) {
-//     if (!value) {
-//       return 'Time is required!';
-//     }
-//   },
-// });
-// watch([date, time], () => {
-//   validateField('time');
-// });
 
 const date = ref(formatISO(new Date(), { representation: 'date' }));
 const hour = ref(getHours(new Date()));
