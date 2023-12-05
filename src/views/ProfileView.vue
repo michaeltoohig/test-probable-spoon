@@ -10,29 +10,27 @@
     </div>
 
     <div class="col-auto md:col-span-3">
-
+      <!-- stats -->
       <div class="grid gap-4 grid-cols-2 md:grid-cols-3 w-full justify-center md:justify-start">
-      <div class="stats stats-vertical md:stats-horizontal">  
-        <div class="stat bg-base-300 border-base-300 border">
-          <div class="stat-title">Moves Today</div>
-          <div class="stat-value">{{ movesToday }}</div>
+        <div class="stats">  
+          <div class="stat bg-base-300 border-base-300 border">
+            <div class="stat-title">Moves Today</div>
+            <div class="stat-value">{{ movesToday }}</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat bg-base-300 border-base-300 border">
+            <div class="stat-title">Moves Week</div>
+            <div class="stat-value">{{ movesWeek }}</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat bg-base-300 border-base-300 border">
+            <div class="stat-title">Moves Month</div>
+            <div class="stat-value">{{ movesMonth }}</div>
+          </div>
         </div>
       </div>
-      <div class="stats">
-        
-        <div class="stat bg-base-300 border-base-300 border">
-          <div class="stat-title">Moves Week</div>
-          <div class="stat-value">{{ movesWeek }}</div>
-        </div>
-      </div>
-      <div class="stats">
-        
-        <div class="stat bg-base-300 border-base-300 border">
-          <div class="stat-title">Moves Month</div>
-          <div class="stat-value">{{ movesMonth }}</div>
-        </div>
-      </div>
-    </div>
 
       <div class="divider"></div>
 
