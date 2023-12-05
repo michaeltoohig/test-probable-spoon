@@ -31,8 +31,14 @@
         >
           <option disabled selected>Select a location!</option>
 
-          <optgroup v-for="(groupedLocations, areaName) in groupedLocations" :key="areaName" :label="areaName">
-            <option v-for="loc in groupedLocations" :key="loc.id" :value="loc.id">{{ loc.name }}</option>
+          <optgroup
+            v-for="(groupedLocations, areaName) in groupedLocations"
+            :key="areaName"
+            :label="areaName"
+          >
+            <option v-for="loc in groupedLocations" :key="loc.id" :value="loc.id">
+              {{ loc.name }}
+            </option>
           </optgroup>
         </select>
         <label v-if="'location' in errors" class="label">
@@ -68,13 +74,9 @@
             Yesterday
           </button>
         </div>
-        <input
-          class="input input-primary w-full max-w-lg"
-          type="date"
-          v-model="date"
-        />
-        <label v-if="'reported_at' in errors" class="label">
-          <span class="label-text-alt text-red-500">{{ errors.reported_at }}</span>
+        <input class="input input-primary w-full max-w-lg" type="date" v-model="date" />
+        <label v-if="'date_reported' in errors" class="label">
+          <span class="label-text-alt text-red-500">{{ errors.date_reported }}</span>
         </label>
       </div>
 
@@ -91,16 +93,13 @@
             <option disabled selected>Hour</option>
             <option v-for="hour in hours" :key="hour">{{ hour }}</option>
           </select>
-          <select
-            v-model="minute"
-            class="select select-bordered w-full join-item"
-          >
+          <select v-model="minute" class="select select-bordered w-full join-item">
             <option disabled selected>Minute</option>
             <option v-for="min in minutes" :key="min">{{ min }}</option>
           </select>
         </div>
-        <label v-if="'reported_at' in errors" class="label">
-          <span class="label-text-alt text-red-500">{{ errors.reported_at }}</span>
+        <label v-if="'date_reported' in errors" class="label">
+          <span class="label-text-alt text-red-500">{{ errors.date_reported }}</span>
         </label>
       </div>
 
@@ -118,9 +117,13 @@ import { formatISO, getHours, getMinutes, sub, isFuture, parseISO, parse } from 
 import { useForm } from '@vorms/core';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/authStore';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const notifyStore = useNotifyStore();
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 
 // Setup initial select values
 
@@ -181,39 +184,50 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
     container: '',
     location: '',
     movement_code: '',
-    reported_at: formatISO(new Date()),
+    date_reported: formatISO(new Date()),
+    reported_by: user.value?.id,
   },
   async validate(values) {
-    const response = await directus.items("Movements").readByQuery({
+    if (!values.container || !values.location || !values.movement_code) {
+      return;
+    }
+
+    const response = await directus.items('Movements').readByQuery({
       filter: {
         container: {
-          _eq: values.container
+          _eq: values.container,
         },
         location: {
-          _eq: values.location
+          _eq: values.location,
         },
         movement_code: {
-          _eq: values.movement_code
+          _eq: values.movement_code,
         },
         date_created: {
-          _gte: '$NOW(-5 minutes)'
+          _gte: '$NOW(-5 minutes)',
         },
-      }
-    })
+      },
+    });
     if (response.data.length > 0) {
+      notifyStore.notify(
+        'This container movement was already recorded recently.',
+        NotificationType.Error
+      );
       return {
-        container: 'The container was recently moved to this location already; do not repeat movements.',
+        container: 'This container movement was already recorded recently.',
+        location: 'This container movement was already recorded recently.',
+        movement_code: 'This container movement was already recorded recently.',
       };
     }
-    if (isFuture(values.reported_at)) {
+    if (isFuture(values.date_reported)) {
       return {
-        reported_at: 'The date & time must be in the past!',
+        date_reported: 'The date & time must be in the past!',
       };
     }
   },
   async onSubmit(data) {
     try {
-      await directus.items("Movements").createOne(data);
+      await directus.items('Movements').createOne(data);
       notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
       router.push({ name: 'home' });
     } catch (err) {
@@ -224,28 +238,29 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
 });
 const { value: container, attrs: containerAttrs } = register('container', {
   validate(value) {
-    if (!value) {
+    if (value == '') {
+      console.log('v');
       return 'Container is required!';
     }
   },
 });
 const { value: location, attrs: locationAttrs } = register('location', {
   validate(value) {
-    if (!value) {
+    if (value == '') {
       return 'Location is required!';
     }
   },
 });
 const { value: movementCode, attrs: movementCodeAttrs } = register('movement_code', {
   validate(value) {
-    if (!value) {
+    if (value == '') {
       return 'Movement Code is required!';
     }
   },
 });
-const { value: reported_at } = register('reported_at', {
+const { value: date_reported } = register('date_reported', {
   validate(value) {
-    if (!value) {
+    if (value == '') {
       return 'Date is required!';
     }
     if (isFuture(parseISO(value))) {
@@ -264,14 +279,16 @@ const { value: reported_at } = register('reported_at', {
 //   validateField('time');
 // });
 
-const date = ref(formatISO(new Date(), { representation: 'date' }))
+const date = ref(formatISO(new Date(), { representation: 'date' }));
 const hour = ref(getHours(new Date()));
 const minute = ref(getMinutes(new Date()));
 watch([date, hour, minute], () => {
   console.log(hour.value, minute.value);
-  console.log(parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value)))
-  reported_at.value = formatISO(parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value)))
-  validateField('reported_at');
+  console.log(parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value)));
+  date_reported.value = formatISO(
+    parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value))
+  );
+  validateField('date_reported');
 });
 
 const setSelectedTime = (value: string) => {

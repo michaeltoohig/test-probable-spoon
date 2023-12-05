@@ -7,8 +7,32 @@ interface Container {
   type: string;
 }
 
+interface Area {
+  id: string;
+  name: string;
+}
+
+interface Location {
+  id: string;
+  name: string;
+  area: Area;
+}
+
+interface Movement {
+  id: string;
+  container: Container;
+  location: Location;
+  movement_code: string;
+  reported_by: string;
+  date_reported: string;
+  date_created: string;
+}
+
 interface Schema {
-  containers: Container[];
+  Containers: Container[];
+  Movements: Movement[];
+  Areas: Area[];
+  Locations: Location[];
 }
 
 // const directus = createDirectus<Schema>(import.meta.env.VITE_DIRECTUS_URL).with(rest()).with(authentication());
