@@ -11,6 +11,7 @@ export const EMAIL_REGEX =
 export type AuthStoreState = {
   last_page: string | null;
   user: Ref<UserType | null>;
+  avatar: string | null;
   loading: boolean;
   error: any;
 };
@@ -20,6 +21,7 @@ export type UserType = {
   email: string;
   first_name: string;
   last_name: string;
+  avatar: string | null;
 };
 
 export type LoginForm = {
@@ -31,6 +33,7 @@ export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
     last_page: null,
     user: useStorage('user', null),
+    avatar: null,
     loading: false,
     error: null,
   }),
@@ -61,6 +64,12 @@ export const useAuthStore = defineStore('auth', {
       try {
         const me = await directus.users.me.read();
         this.user = me as UserType;
+        if (this.user.avatar) {
+          this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
+        } else {
+          this.avatar = 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
+        }
+
         // if (user.email !== undefined) {
         // } else {
         //   await directus.auth.static(staticToken);

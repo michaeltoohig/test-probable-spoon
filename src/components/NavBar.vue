@@ -1,32 +1,28 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { RouterLink } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeManager } from '@/plugins/themeManager';
 
 const $theme = useThemeManager();
-const darkToggle = ref<HTMLInputElement>();
-const isDarkMode = computed(() => {
-  let { dark, light } = $theme.getDefaults();
-  if ($theme.get() === dark) return 0;
-  else if ($theme.get() === light) return 1;
-  else {
-    if (darkToggle.value) darkToggle.value.indeterminate = true;
-  }
-  return 2;
-});
 
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { avatar } = storeToRefs(authStore);
 
-const avatarSrc = computed(() => {
-  console.log(user.value);
-  if (user.value?.avatar) {
-    return `${import.meta.env.VITE_DIRECTUS_URL}/assets/${user.value.avatar}`;
-  }
-  return 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
-});
+const navItems = [
+  {
+    name: 'Home',
+    to: { name: 'home' },
+  },
+  {
+    name: 'About',
+    to: { name: 'about' },
+  },
+  {
+    name: 'Theme Preview',
+    to: { name: 'theme-preview' },
+  },
+];
 </script>
 
 <template>
@@ -52,20 +48,18 @@ const avatarSrc = computed(() => {
         <ul
           class="menu menu-sm dropdown-content mt-3 z-[100] p-2 shadow bg-primary rounded-box w-52"
         >
-          <li><RouterLink to="/">Home</RouterLink></li>
-          <li><RouterLink to="/about">About</RouterLink></li>
-          <li><RouterLink to="/theme-preview">Theme Preview</RouterLink></li>
-          <li><RouterLink to="/movements/new">Add Container Movement</RouterLink></li>
+          <li v-for="item in navItems" :key="item.name">
+            <RouterLink :to="item.to">{{ item.name }}</RouterLink>
+          </li>
         </ul>
       </div>
       <RouterLink to="/" class="btn btn-ghost text-xl">SSC</RouterLink>
     </div>
     <div class="navbar-center hidden lg:flex">
       <ul class="menu menu-horizontal px-1">
-        <li><RouterLink to="/">Home</RouterLink></li>
-        <li><RouterLink to="/about">About</RouterLink></li>
-        <li><RouterLink to="/theme-preview">Theme Preview</RouterLink></li>
-        <li><RouterLink to="/movements/new">Add Container Movement</RouterLink></li>
+        <li v-for="item in navItems" :key="item.name">
+          <RouterLink :to="item.to">{{ item.name }}</RouterLink>
+        </li>
       </ul>
     </div>
     <div class="navbar-end">
@@ -110,17 +104,14 @@ const avatarSrc = computed(() => {
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <div class="w-10 rounded-full">
-            <img alt="Tailwind CSS Navbar component" :src="avatarSrc" />
+            <img alt="Tailwind CSS Navbar component" :src="avatar" />
           </div>
         </div>
         <ul
           class="mt-3 z-[100] p-2 shadow menu menu-sm dropdown-content bg-primary rounded-box w-52"
         >
           <li>
-            <a class="justify-between">
-              Profile
-              <span class="badge">New</span>
-            </a>
+            <RouterLink :to="{ name: 'profile' }">Profile</RouterLink>
           </li>
           <li><RouterLink :to="{ name: 'logout' }">Logout</RouterLink></li>
         </ul>

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import containerMovementImgSrc from '../assets/container-movement.png?url';
+import { useNotifyStore } from '../stores/notifyStore';
 
 const notifyStore = useNotifyStore();
-notifyStore.notify("Hello Home Page!!!", NotificationType.Info)
 
 function getSpecialUrl() {
   fetch('https://random-data-api.com/api/users/random_user')
