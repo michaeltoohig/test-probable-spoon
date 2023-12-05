@@ -36,20 +36,30 @@
           </div>
           <div class="form-control">
             <label class="label cursor-pointer">
-              <span class="label-text">Remember me</span> 
+              <span class="label-text">Remember me</span>
               <input type="checkbox" :checked="remember" class="checkbox" />
             </label>
           </div>
 
           <div v-if="error" role="alert" class="alert alert-error">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
             <span>{{ error }}</span>
           </div>
-          
+
           <div class="form-control">
-            <button type="submit" class="btn btn-primary" :disabled="loading">
-              Submit
-            </button>
+            <button type="submit" class="btn btn-primary" :disabled="loading">Submit</button>
           </div>
         </form>
       </div>
@@ -77,7 +87,7 @@ const { register, errors, handleSubmit } = useForm({
   async onSubmit(values) {
     try {
       await authStore.login(values);
-      router.push({ name: 'home' })
+      router.push({ name: 'home' });
     } catch (err: any) {
       console.log('xxx', err);
     }
@@ -86,14 +96,14 @@ const { register, errors, handleSubmit } = useForm({
 
 const { value: email, attrs: emailAttrs } = register('email', {
   validate(value: string) {
-    if (!value) return 'auth.email-required' // t('auth.email-required');
-    return EMAIL_REGEX.test(value) ? undefined : 'auth.email-not-vaild' // t('auth.email-not-vaild');
+    if (!value) return 'auth.email-required'; // t('auth.email-required');
+    return EMAIL_REGEX.test(value) ? undefined : 'auth.email-not-vaild'; // t('auth.email-not-vaild');
   },
 });
 const { value: password, attrs: passwordAttrs } = register('password', {
   validate(value: string) {
-    if (!value) return 'auth.password-required' // t('auth.password-required');
-    if (value.length < 8) return 'auth.password-length-required' // t('auth.password-length-required');
+    if (!value) return 'auth.password-required'; // t('auth.password-required');
+    if (value.length < 8) return 'auth.password-length-required'; // t('auth.password-length-required');
   },
 });
 const { value: remember } = register('remember');

@@ -41,20 +41,21 @@ Or when "`setTheme('default')`" is being called.
 
 ```ts
 // main.ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import { createThemeManager } from '@/plugins/themeManager'
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createThemeManager } from '@/plugins/themeManager';
 
-const app = createApp(App)
+const app = createApp(App);
 app.use(
   createThemeManager({
-    light: 'breeze',
-    dark: 'storm',
-    watchSystemTheme: true
-  })
-)
+    light: 'winter',
+    dark: 'winter',
 
-app.mount('#app')
+    watchSystemTheme: true,
+  })
+);
+
+app.mount('#app');
 ```
 
 <hr />
@@ -78,8 +79,8 @@ const themeManagerInstance = {
 ### Installation
 
 ```ts
-import { useThemeManager } from '@/plugins/themeManager'
-const $theme = useThemeManager()
+import { useThemeManager } from '@/plugins/themeManager';
+const $theme = useThemeManager();
 ```
 
 ### Methods
@@ -91,7 +92,7 @@ const $theme = useThemeManager()
   ```
   usage example:
   ```ts
-  $theme.set('light')
+  $theme.set('light');
   ```
 - `get` - Get the current active theme <br>
   Type definition:
@@ -100,7 +101,7 @@ const $theme = useThemeManager()
   ```
   Usage example:
   ```ts
-  $theme.get() // ie: 'coffee'
+  $theme.get(); // ie: 'coffee'
   ```
 - `toggleDark` - Toggle between the default light and dark themes that were defined in the plugin setup <br>
   Type definition:
@@ -109,7 +110,7 @@ const $theme = useThemeManager()
   ```
   Usage example:
   ```ts
-  $theme.toggleDark()
+  $theme.toggleDark();
   ```
 - `setDefaults` - Set the default light and dark themes after the plugin has been initiated. <br>
   Type definition:
@@ -118,7 +119,7 @@ const $theme = useThemeManager()
   ```
   Usage example:
   ```ts
-  $theme.setDefaults({ light: 'aqua', dark: 'business' })
+  $theme.setDefaults({ light: 'aqua', dark: 'business' });
   ```
 - `getDefaults` - Get the default light and dark themes <br>
   Type definition:
@@ -127,7 +128,7 @@ const $theme = useThemeManager()
   ```
   Usage example:
   ```ts
-  $theme.getDefaults() // ie: { light: 'aqua', dark: 'business' }
+  $theme.getDefaults(); // ie: { light: 'aqua', dark: 'business' }
   ```
 - `watchSystemTheme` - Watch for system theme changes, and set if you want it to
   update the theme `immediately` to the default theme that corresponds to the system mode (light/dark).
@@ -139,18 +140,18 @@ const $theme = useThemeManager()
   Usage example:
   ```ts
   /* Returns if the theme manager watching the active system theme */
-  $theme.watchSystemTheme() // ie: true
+  $theme.watchSystemTheme(); // ie: true
   /*
     Theme will change to the default theme that corresponds
     to the system mode (light/dark)
   */
-  $theme.watchSystemTheme(true)
+  $theme.watchSystemTheme(true);
   /* theme will remain the same even if the system theme changes */
-  $theme.watchSystemTheme(false)
+  $theme.watchSystemTheme(false);
   /* theme will not change immidiatly to the default theme that corresponds to the system mode (light/dark)
      it will change if the theme of the system changes again
   */
-  $theme.watchSystemTheme(true, false)
+  $theme.watchSystemTheme(true, false);
   ```
 - `isDark` - Get the current system theme <br>
   Type definition:
@@ -159,5 +160,5 @@ const $theme = useThemeManager()
   ```
   Usage example:
   ```ts
-  $theme.isDark() // ie: true
+  $theme.isDark(); // ie: true
   ```

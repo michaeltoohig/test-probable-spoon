@@ -39,44 +39,49 @@
 //   ]
 // }));
 
-
-
 /// <reference lib="WebWorker" />
 
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
-import { NavigationRoute, registerRoute } from 'workbox-routing'
+import {
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+  precacheAndRoute,
+} from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 declare let self: ServiceWorkerGlobalScope;
 
-console.log('prompt345671')
+console.log('prompt345671');
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting()
+    self.skipWaiting();
   }
-})
+});
 
 // self.__WB_MANIFEST is default injection point
-precacheAndRoute(self.__WB_MANIFEST)
+precacheAndRoute(self.__WB_MANIFEST);
 
 // clean old assets
-cleanupOutdatedCaches()
+cleanupOutdatedCaches();
 
 // to allow work offline
-registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')))
+registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')));
 
-import {CacheFirst} from 'workbox-strategies';
-import {CacheableResponsePlugin} from 'workbox-cacheable-response';
+import { CacheFirst } from 'workbox-strategies';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
-const matchCb = ({url}) => {
+const matchCb = ({ url }) => {
   console.log('ur', url);
   return url.origin === 'https://random-data-api.com';
 };
 
-registerRoute(matchCb, new CacheFirst({
-  plugins: [
-    new CacheableResponsePlugin({
-      statuses: [0, 200]
-    })
-  ]
-}));
+registerRoute(
+  matchCb,
+  new CacheFirst({
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  })
+);

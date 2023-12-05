@@ -1,6 +1,5 @@
 // import { authentication, createDirectus, rest, readItem, readItems  } from "@directus/sdk";
-import { Directus  } from "@directus/sdk";
-
+import { Directus } from '@directus/sdk';
 
 interface Container {
   id: string;
@@ -28,6 +27,4 @@ const directus = new Directus<Schema>(import.meta.env.VITE_DIRECTUS_URL);
 // const results = await directus.items("Containers").readByQuery({ limit: -1 })
 // console.log('x', results);
 
-export {
-  directus,
-};
+export { directus };

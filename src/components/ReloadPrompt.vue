@@ -1,65 +1,49 @@
 <script setup lang="ts">
-import { useRegisterSW } from 'virtual:pwa-register/vue'
-import { pwaInfo } from 'virtual:pwa-info'
+import { useRegisterSW } from 'virtual:pwa-register/vue';
+import { pwaInfo } from 'virtual:pwa-info';
 
 // eslint-disable-next-line no-console
-console.log('pwaInfo', pwaInfo)
+console.log('pwaInfo', pwaInfo);
 
 // replaced dyanmicaly
-const reloadSW: any = '__RELOAD_SW__'
+const reloadSW: any = '__RELOAD_SW__';
 
-const {
-  offlineReady,
-  needRefresh,
-  updateServiceWorker,
-} = useRegisterSW({
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
   onRegisterError(error) {
     console.log('sw err', error);
   },
   onRegisteredSW(swUrl, r) {
     // eslint-disable-next-line no-console
-    console.log(`Service Worker at: ${swUrl}`, reloadSW)
+    console.log(`Service Worker at: ${swUrl}`, reloadSW);
     if (reloadSW === 'true') {
-      r && setInterval(async () => {
-        // eslint-disable-next-line no-console
-        console.log('Checking for sw update')
-        await r.update()
-      }, 20000 /* 20s for testing purposes */)
-    }
-    else {
+      r &&
+        setInterval(async () => {
+          // eslint-disable-next-line no-console
+          console.log('Checking for sw update');
+          await r.update();
+        }, 20000 /* 20s for testing purposes */);
+    } else {
       // eslint-disable-next-line no-console
-      console.log(`SW Registered: ${r}`, r)
+      console.log(`SW Registered: ${r}`, r);
     }
   },
-})
+});
 
 async function close() {
-  offlineReady.value = false
-  needRefresh.value = false
+  offlineReady.value = false;
+  needRefresh.value = false;
 }
 </script>
 
 <template>
-  <div
-    v-if="offlineReady || needRefresh"
-    class="pwa-toast"
-    role="alert"
-  >
+  <div v-if="offlineReady || needRefresh" class="pwa-toast" role="alert">
     <div class="message">
-      <span v-if="offlineReady">
-        App ready to work offline
-      </span>
-      <span v-else>
-        New content available, click on reload button to update.
-      </span>
+      <span v-if="offlineReady"> App ready to work offline </span>
+      <span v-else> New content available, click on reload button to update. </span>
     </div>
-    <button v-if="needRefresh" @click="updateServiceWorker()">
-      Reload
-    </button>
-    <button @click="close">
-      Close
-    </button>
+    <button v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
+    <button @click="close">Close</button>
   </div>
 </template>
 

@@ -3,10 +3,9 @@ import { Ref } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { directus } from '@/services/directus';
 
-const staticToken = import.meta.env.VITE_DIRECTUS_TOKEN;
-
 // @see https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
 export const EMAIL_REGEX =
+  // eslint-disable-next-line no-control-regex
   /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 
 export type AuthStoreState = {
@@ -89,10 +88,7 @@ export const useAuthStore = defineStore('auth', {
         // handle the error
         console.error('User Login Failed', err);
         const error = err.response?.data?.errors[0]?.extensions?.code || err;
-        if (
-          error == 'INVALID_CREDENTIALS' ||
-          error == 'Error: Invalid user credentials.'
-        ) {
+        if (error == 'INVALID_CREDENTIALS' || error == 'Error: Invalid user credentials.') {
           this.error = 'INVALID_CREDENTIALS'; // TODO i18n
         } else {
           console.error('Unhandled error', err);
@@ -107,5 +103,5 @@ export const useAuthStore = defineStore('auth', {
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useAuthStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useAuthStore, import.meta.hot));
 }

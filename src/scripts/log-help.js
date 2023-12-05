@@ -1,5 +1,5 @@
-const fs = require('fs')
-const scripts = Object.keys(JSON.parse(fs.readFileSync('./package.json')).scripts || {})
+const fs = require('fs');
+const scripts = Object.keys(JSON.parse(fs.readFileSync('./package.json')).scripts || {});
 const scriptList = {
   dev: '                 Start the development environment',
   build: '               Type check and build the app',
@@ -22,9 +22,9 @@ const scriptList = {
   coverage: '            Run the unit tests and generate a coverage report (c8)',
   'type-check': '          Type check the app',
   lint: '                Lint the app with ESlint',
-  format: '              Format the app with prettier'
-}
+  format: '              Format the app with prettier',
+};
 scripts.forEach((script) => {
-  if (Object.keys(scriptList).includes(script)) console.log(`${script}   ${scriptList[script]}`)
-  else console.log(`${script}`)
-})
+  if (Object.keys(scriptList).includes(script)) console.log(`${script}   ${scriptList[script]}`);
+  else console.log(`${script}`);
+});

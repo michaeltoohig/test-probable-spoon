@@ -1,16 +1,16 @@
-import { createApp, markRaw } from 'vue'
-import App from './App.vue'
-import router from './router'
+import { createApp, markRaw } from 'vue';
+import App from './App.vue';
+import router from './router';
 // import { useRouter } from 'vue-router'
 // import type { Router as RouterType } from 'vue-router'
-import { createPinia } from 'pinia'
-import { createThemeManager } from './plugins/themeManager'
-import './assets/main.css'
-import './assets/style.css'
+import { createPinia } from 'pinia';
+import { createThemeManager } from './plugins/themeManager';
+import './assets/main.css';
+import './assets/style.css';
 
 const app = createApp(App)
   .use(router)
-  .use(createThemeManager({ light: 'breeze', dark: 'storm', watchSystemTheme: true }))
+  .use(createThemeManager({ light: 'winter', dark: 'night', watchSystemTheme: true }));
 
 const pinia = createPinia();
 // pinia.use(({ store }) => {
@@ -24,5 +24,5 @@ declare module 'pinia' {
   }
 }
 app.use(pinia);
-  
+
 app.mount('#app');
