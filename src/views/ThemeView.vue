@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import { type DaisyThemes, useThemeManager, daisyThemes } from '@/plugins/themeManager';
+import { type DaisyThemes, useThemeManager, daisyThemes } from '../plugins/themeManager';
 import { ref, computed } from 'vue';
 const $theme = useThemeManager();
 const changeTheme = (e: any) => $theme.set(e.target.value as DaisyThemes);

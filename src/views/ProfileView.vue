@@ -106,20 +106,12 @@ const authStore = useAuthStore();
 const { user, avatar } = storeToRefs(authStore);
 
 const recentMovements = ref<Movement[]>([]);
-const fetchRecentMovements = async (userId: string) => {
+const fetchRecentMovements = async (userId: string): Promise<Movement[]> => {
   try {
     const response = await directus.items('Movements').readByQuery({
       limit: -1,
-      fields: [
-        '*',
-        'container.id',
-        'container.code',
-        'location.id',
-        'location.name',
-        'location.area.id',
-        'location.area.name',
-        'movement_code.name',
-      ],
+      // @ts-ignore
+      fields: ['*','container.id','container.code','location.id','location.name','location.area.id','location.area.name','movement_code.name', ],
       filter: {
         reported_by: {
           _eq: userId,
@@ -130,6 +122,7 @@ const fetchRecentMovements = async (userId: string) => {
       },
       sort: ['-date_reported'],
     });
+    // @ts-ignore
     return response.data;
   } catch (error) {
     console.error(error);
@@ -139,7 +132,7 @@ const fetchRecentMovements = async (userId: string) => {
 };
 
 onMounted(async () => {
-  recentMovements.value = await fetchRecentMovements(user.value.id);
+  recentMovements.value = await fetchRecentMovements(user.value!.id)
 });
 
 const movesToday = computed(() => {

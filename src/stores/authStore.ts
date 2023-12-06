@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { Ref } from 'vue';
 import { useStorage } from '@vueuse/core';
-import { directus } from '@/services/directus';
+import { directus } from '../services/directus';
 
 // @see https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
 export const EMAIL_REGEX =

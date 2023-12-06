@@ -5,13 +5,17 @@ import ReloadPrompt from './components/ReloadPrompt.vue';
 import Notifications from './components/Notifications.vue';
 import { onBeforeMount } from 'vue';
 import { useAuthStore } from './stores/authStore';
+import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
+
+const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
 
 onBeforeMount(async () => {
-  if (isLoggedIn.value) {
+  console.info('[App] Checking auth onBeforeMount');
+  if (isOnline && isLoggedIn.value) {
     try {
       await authStore.getCurrentUser();
     } catch (err: any) {

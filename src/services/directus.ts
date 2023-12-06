@@ -1,28 +1,34 @@
 // import { authentication, createDirectus, rest, readItem, readItems  } from "@directus/sdk";
-import { Directus } from '@directus/sdk';
+import { Directus, ID } from '@directus/sdk';
 
-interface Container {
-  id: string;
+export interface Container {
+  id: ID;
   code: string;
   type: string;
 }
 
-interface Area {
-  id: string;
+export interface Area {
+  id: ID;
   name: string;
 }
 
-interface Location {
-  id: string;
+export interface Location {
+  id: ID;
   name: string;
   area: Area;
 }
 
-interface Movement {
-  id: string;
+export interface MovementCode {
+  id: ID;
+  name: string;
+  code: string;
+}
+
+export interface Movement {
+  id: ID;
   container: Container;
   location: Location;
-  movement_code: string;
+  movement_code: MovementCode;
   reported_by: string;
   date_reported: string;
   date_created: string;
@@ -30,9 +36,10 @@ interface Movement {
 
 interface Schema {
   Containers: Container[];
-  Movements: Movement[];
   Areas: Area[];
   Locations: Location[];
+  MovementCodes: MovementCode[];
+  Movements: Movement[];
 }
 
 // const directus = createDirectus<Schema>(import.meta.env.VITE_DIRECTUS_URL).with(rest()).with(authentication());

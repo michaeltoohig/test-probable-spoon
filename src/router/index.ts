@@ -1,6 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '@/views/LoginView.vue';
+import LogoutView from '@/views/LogoutView.vue';
 import BaseLayout from '@/views/BaseLayout.vue';
+import HomeView from '@/views/HomeView';
+import ProfileView from '@/views/ProfileView';
+import AboutView from '@/views/AboutView';
+import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
 
 const router = createRouter({
@@ -14,7 +19,7 @@ const router = createRouter({
     {
       path: '/logout',
       name: 'logout',
-      component: () => import('../views/LogoutView.vue'),
+      component: LogoutView,
       meta: {
         requiresAuth: true,
       },
@@ -29,7 +34,7 @@ const router = createRouter({
         {
           path: '/',
           name: 'home',
-          component: () => import('../views/HomeView.vue'),
+          component: HomeView,
         },
         {
           path: '/profile',
@@ -37,7 +42,7 @@ const router = createRouter({
           // route level code-splitting
           // this generates a separate chunk (Profile.[hash].js) for this route
           // which is lazy-loaded when the route is visited.
-          component: () => import('../views/ProfileView.vue'),
+          component: ProfileView,
         },
         {
           path: '/about',
@@ -45,17 +50,18 @@ const router = createRouter({
           // route level code-splitting
           // this generates a separate chunk (About.[hash].js) for this route
           // which is lazy-loaded when the route is visited.
-          component: () => import('../views/AboutView.vue'),
+          component: AboutView,
         },
         {
           path: '/theme-preview',
           name: 'theme-preview',
+          // @ts-ignore
           component: () => import('../views/ThemeView.vue'),
         },
         {
           path: '/movements/new',
           name: 'movements-new',
-          component: () => import('../views/ReportMovementView.vue'),
+          component: ReportMovementView,
         },
       ],
     },
@@ -64,7 +70,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    console.log('check auth');
+    console.info('[router] beforeEach checking auth');
     const authStore = useAuthStore();
     if (!authStore.isLoggedIn) {
       next({ name: 'login' });

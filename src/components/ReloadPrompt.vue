@@ -3,7 +3,7 @@ import { useRegisterSW } from 'virtual:pwa-register/vue';
 import { pwaInfo } from 'virtual:pwa-info';
 
 // eslint-disable-next-line no-console
-console.log('pwaInfo', pwaInfo);
+// console.log('pwaInfo', pwaInfo);
 
 // replaced dyanmicaly
 const reloadSW: any = '__RELOAD_SW__';
@@ -37,37 +37,19 @@ async function close() {
 </script>
 
 <template>
-  <div v-if="offlineReady || needRefresh" class="pwa-toast" role="alert">
-    <div class="message">
+  <div class="fixed z-[100] bottom-0 left-0 p-4 w-full">
+    <div v-if="offlineReady || needRefresh" class="pwa-toast alert" role="alert">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       <span v-if="offlineReady"> App ready to work offline </span>
-      <span v-else> New content available, click on reload button to update. </span>
+      <span v-else> New content available, click <i>reload</i> to update. </span>
+      <div>
+        <button class="btn btn-sm" @click="close">Ignore For Now</button>
+        <button class="btn btn-sm btn-primary" v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
+      </div>
     </div>
-    <button v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
-    <button @click="close">Close</button>
   </div>
 </template>
 
 <style>
-.pwa-toast {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  margin: 16px;
-  padding: 12px;
-  border: 1px solid #8885;
-  border-radius: 4px;
-  z-index: 1;
-  text-align: left;
-  box-shadow: 3px 4px 5px 0px #8885;
-}
-.pwa-toast .message {
-  margin-bottom: 8px;
-}
-.pwa-toast button {
-  border: 1px solid #8885;
-  outline: none;
-  margin-right: 5px;
-  border-radius: 2px;
-  padding: 3px 10px;
-}
+
 </style>

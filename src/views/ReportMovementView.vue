@@ -121,7 +121,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { directus } from '@/services/directus';
+import { directus } from '../services/directus';
+import type { MovementCode, Location, Container } from '../services/directus';
 import { formatISO, getHours, getMinutes, sub, isFuture, parseISO, parse } from 'date-fns';
 import { useForm } from '@vorms/core';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
@@ -139,34 +140,38 @@ const { user } = storeToRefs(authStore);
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const hours = Array.from({ length: 24 }, (_, i) => i);
 
-const containers = ref([]);
+const containers = ref<Container[]>([]);
 directus
   .items('Containers')
   .readByQuery({
     limit: -1,
+    // @ts-ignore
     fields: ['id', 'code', 'type'],
+    // @ts-ignore
     sort: 'code',
   })
   .then((resp: any) => {
     containers.value = resp.data;
   });
 
-const movementCodes = ref([]);
+const movementCodes = ref<MovementCode[]>([]);
 directus
   .items('MovementCodes')
   .readByQuery({
     limit: -1,
+    // @ts-ignore
     fields: ['id', 'code'],
   })
   .then((resp: any) => {
     movementCodes.value = resp.data;
   });
 
-const locations = ref<Array<{ id: string; name: string; area: { name: string } }>>([]);
+const locations = ref<Location[]>([]);
 directus
   .items('Locations')
   .readByQuery({
     limit: -1,
+    // @ts-ignore
     fields: ['id', 'name', 'area.id', 'area.name'],
   })
   .then((resp: any) => {
@@ -214,12 +219,15 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
     const response = await directus.items('Movements').readByQuery({
       filter: {
         container: {
+          // @ts-ignore
           _eq: values.container,
         },
         location: {
+          // @ts-ignore
           _eq: values.location,
         },
         movement_code: {
+          // @ts-ignore
           _eq: values.movement_code,
         },
         date_created: {
@@ -227,7 +235,7 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
         },
       },
     });
-    if (response.data.length > 0) {
+    if (response.data && response.data.length > 0) {
       notifyStore.notify(
         'This container movement was already recorded recently.',
         NotificationType.Error
@@ -236,11 +244,6 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
         container: 'This container movement was already recorded recently.',
         location: 'This container movement was already recorded recently.',
         movement_code: 'This container movement was already recorded recently.',
-      };
-    }
-    if (isFuture(values.date_reported)) {
-      return {
-        date_reported: 'The date & time must be in the past!',
       };
     }
   },

@@ -19,10 +19,10 @@ const pwaOptions: Partial<VitePWAOptions> = {
   injectManifest: {
     swSrc: 'src/sw.ts',
     swDest: 'dist/sw.js',
-    // globDirectory: 'dist',
-    // globPatterns: [
-    //   '**/*.{html,js,css,json,png,webp,jpg}',
-    // ],
+    globDirectory: 'dist',
+    globPatterns: [
+      '**/*.{html,js,css,json,png,webp,jpg}',
+    ],
   },
   // registerType: 'autoUpdate',
   manifest: {
