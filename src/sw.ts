@@ -29,10 +29,19 @@ cleanupOutdatedCaches();
 //   allowlist = [/^\/$/]
 
 // to allow work offline
-registerRoute(new NavigationRoute(
-  createHandlerBoundToURL('index.html'),
-  // { allowlist },
-));
+// registerRoute(new NavigationRoute(
+//   createHandlerBoundToURL('index.html'),
+//   // { allowlist },
+// ));
+
+
+// registerRoute(
+//   ({ request }) => request.mode === 'navigate',
+//   () => {
+//     const defaultBase = '/index.html';
+//     return caches
+//   }
+// )
 
 // Cache API Get requests
 const matchDirectusApiCb = ({ url }) => {
@@ -54,11 +63,11 @@ registerRoute(
 //   maxRetentionTime: 60 * 24 * 3, // Retry for max of 3 days
 // });
 
-// const matchPostMovementCb = ({ url, request }) => {
-//   console.log('r', request)
-//   // return url.origin === 'http://localhost:8055' && url.pathname === '/items/Movements'
-//   return true
-// }
+// // const matchPostMovementCb = ({ url, request }) => {
+// //   console.log('r', request)
+// //   // return url.origin === 'http://localhost:8055' && url.pathname === '/items/Movements'
+// //   return true
+// // }
 // registerRoute(
 //   /http:\/\/localhost:8055/,
 //   new NetworkOnly({
@@ -67,23 +76,26 @@ registerRoute(
 //   'POST',
 // );
 
-// const sscQueue = new Queue('sscQueue');
+const sscQueue = new Queue('sscQueue');
 
-// self.addEventListener('fetch', (event) => {
-//   if (event.request.method !== 'POST') {
-//     return;
-//   }
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'POST') {
+    return;
+  };
+  
+  console.log('!!! Working on request', event.request);
+  const bgSyncLogic = async () => {
+    try {
+      const response = await fetch(event.request.clone());
+      return response;
+    } catch (error) {
+      await sscQueue.pushRequest({ request: event.request });
+      return error;
+    }
+  };
 
-//   const bySyncLogic = async () => {
-//     try {
-//       const response = await fetch(event.request.clone());
-//       return response;
-//     } catch (error) {
-//       await sscQueue.pushRequest({ request: event.request });
-//       return error;
-//     }
-//   }
-// });
+  event.respondWith(bgSyncLogic());
+});
 
 
 

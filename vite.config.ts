@@ -10,19 +10,26 @@ const path = require('path')
 
 
 const pwaOptions: Partial<VitePWAOptions> = {
-  mode: 'development',
-  base: '/',
-  includeAssets: ['favicon.svg'],
+  // mode: 'development',
+  // base: '/',
+  // includeAssets: ['favicon.svg'],
   srcDir: 'src',
   filename: 'sw.ts',
   strategies: 'injectManifest',
-  injectManifest: {
-    swSrc: 'src/sw.ts',
-    swDest: 'dist/sw.js',
-    globDirectory: 'dist',
-    globPatterns: [
-      '**/*.{html,js,css,json,png,webp,jpg}',
-    ],
+  navigateFallback: 'index.html',
+  // injectManifest: {
+  //   swSrc: 'src/sw.ts',
+  //   swDest: 'dist/sw.js',
+  //   globDirectory: 'dist',
+  //   globPatterns: [
+  //     '**/*.{html,js,css,json,png,webp,jpg}',
+  //   ],
+  // },
+  // mode: 'development',
+  base: '/',
+  includeAssets: ['**/*'],
+  workbox: {
+    globPatterns: ['**/*'],
   },
   // registerType: 'autoUpdate',
   manifest: {
