@@ -9,8 +9,18 @@ import { CacheFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategie
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { RETRY_QUEUE } from '../constants';
 
-declare let self: ServiceWorkerGlobalScope;
+// Give TypeScript the correct global.
+declare let self: ServiceWorkerGlobalScope
+
+interface BackgroundSyncEvent extends ExtendableEvent {
+  tag: string;
+}
+
+interface PeriodicBackgroundSyncEvent extends ExtendableEvent {
+	tag: string;
+}
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -19,7 +29,7 @@ self.addEventListener('message', (event) => {
 });
 
 // self.__WB_MANIFEST is default injection point
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 // clean old assets
 cleanupOutdatedCaches();
@@ -29,10 +39,10 @@ cleanupOutdatedCaches();
 //   allowlist = [/^\/$/]
 
 // to allow work offline
-// registerRoute(new NavigationRoute(
-//   createHandlerBoundToURL('index.html'),
-//   // { allowlist },
-// ));
+registerRoute(new NavigationRoute(
+  createHandlerBoundToURL('index.html'),
+  // { allowlist },
+));
 
 
 // registerRoute(
@@ -76,20 +86,26 @@ registerRoute(
 //   'POST',
 // );
 
-const sscQueue = new Queue('sscQueue');
+const sscQueuePosts = new Queue(RETRY_QUEUE, {
+  maxRetentionTime: 3 * 24 * 60,
+});
+const pathsToQueue = ['/items/Movements'];
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'POST') {
     return;
-  };
+  }
   
-  console.log('!!! Working on request', event.request);
+  if (!pathsToQueue.some((path: string) => event.request.url.includes(path))) {
+    return;
+  }
+
   const bgSyncLogic = async () => {
     try {
       const response = await fetch(event.request.clone());
       return response;
     } catch (error) {
-      await sscQueue.pushRequest({ request: event.request });
+      await sscQueuePosts.pushRequest({ request: event.request });
       return error;
     }
   };
@@ -97,25 +113,35 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(bgSyncLogic());
 });
 
-
-
-
-
-
-
-
-// example only
-const matchCb = ({ url }) => {
-  return url.origin === 'https://random-data-api.com';
+const replayBgSyncQueue = () => {
+  sscQueuePosts.replayRequests().then(() => {
+    console.log("success replay");
+  })
+  .catch(() => {
+    console.error("failed replay");
+  })
 };
 
-registerRoute(
-  matchCb,
-  new CacheFirst({
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
-);
+self.addEventListener('message', (event) => {
+  console.log('Received message', event.data);
+  if (event.data.command === 'SYNC') {
+    replayBgSyncQueue();
+  }
+});
+
+
+// // example only
+// const matchCb = ({ url }) => {
+//   return url.origin === 'https://random-data-api.com';
+// };
+
+// registerRoute(
+//   matchCb,
+//   new CacheFirst({
+//     plugins: [
+//       new CacheableResponsePlugin({
+//         statuses: [0, 200],
+//       }),
+//     ],
+//   })
+// );

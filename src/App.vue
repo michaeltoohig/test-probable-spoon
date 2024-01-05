@@ -7,11 +7,14 @@ import { onBeforeMount } from 'vue';
 import { useAuthStore } from './stores/authStore';
 import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
+import { useRetryQueueStore } from './stores/retryQueueStore';
 
 const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
+
+const queueStore = useRetryQueueStore();
 
 onBeforeMount(async () => {
   console.info('[App] Checking auth onBeforeMount');
@@ -24,6 +27,15 @@ onBeforeMount(async () => {
       router.push({ name: 'login' });
     }
   }
+
+  await queueStore.updateCount();
+  // this doesn't work
+  // console.info('[App] Init service worker client');
+  // if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  //   navigator.serviceWorker.controller.postMessage({
+  //     command: 'INIT',
+  //   });
+  // }
 });
 </script>
 

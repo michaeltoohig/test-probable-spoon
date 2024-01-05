@@ -129,6 +129,7 @@ import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { storeToRefs } from 'pinia';
+import { compileScript } from 'vue/compiler-sfc';
 
 const router = useRouter();
 const notifyStore = useNotifyStore();
@@ -216,35 +217,44 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       return;
     }
 
-    const response = await directus.items('Movements').readByQuery({
-      filter: {
-        container: {
-          // @ts-ignore
-          _eq: values.container,
+    // if offline; return; no need to check this then let it fail when posted online
+    try {
+      const response = await directus.items('Movements').readByQuery({
+        filter: {
+          container: {
+            // @ts-ignore
+            _eq: values.container,
+          },
+          location: {
+            // @ts-ignore
+            _eq: values.location,
+          },
+          movement_code: {
+            // @ts-ignore
+            _eq: values.movement_code,
+          },
+          date_created: {
+            _gte: '$NOW(-5 minutes)',
+          },
         },
-        location: {
-          // @ts-ignore
-          _eq: values.location,
-        },
-        movement_code: {
-          // @ts-ignore
-          _eq: values.movement_code,
-        },
-        date_created: {
-          _gte: '$NOW(-5 minutes)',
-        },
-      },
-    });
-    if (response.data && response.data.length > 0) {
-      notifyStore.notify(
-        'This container movement was already recorded recently.',
-        NotificationType.Error
-      );
-      return {
-        container: 'This container movement was already recorded recently.',
-        location: 'This container movement was already recorded recently.',
-        movement_code: 'This container movement was already recorded recently.',
-      };
+      });
+
+      if (response.data && response.data.length > 0) {
+        notifyStore.notify(
+          'This container movement was already recorded recently.',
+          NotificationType.Error
+        );
+        return {
+          container: 'This container movement was already recorded recently.',
+          location: 'This container movement was already recorded recently.',
+          movement_code: 'This container movement was already recorded recently.',
+        };
+      }
+    } catch (err) {
+      // if offline then don't alert the error
+      console.error(err);
+      notifyStore.notify('Something went wrong validating form', NotificationType.Error);
+      return false;
     }
   },
   async onSubmit(data) {
@@ -255,6 +265,8 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
     } catch (err) {
       console.error(err);
       notifyStore.notify('Something went wrong', NotificationType.Error);
+    } finally {
+      console.log('todo update queue length count')
     }
   },
 });

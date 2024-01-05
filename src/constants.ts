@@ -1,0 +1,1 @@
+export const RETRY_QUEUE = 'ssc-retry-queue';

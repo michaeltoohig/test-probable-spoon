@@ -11,11 +11,11 @@ const path = require('path')
 
 const pwaOptions: Partial<VitePWAOptions> = {
   // mode: 'development',
-  // base: '/',
+  base: '/',
   // includeAssets: ['favicon.svg'],
-  srcDir: 'src',
-  filename: 'sw.ts',
   strategies: 'injectManifest',
+  srcDir: 'src/service-worker',
+  filename: 'sw.ts',
   navigateFallback: 'index.html',
   // injectManifest: {
   //   swSrc: 'src/sw.ts',
@@ -26,7 +26,6 @@ const pwaOptions: Partial<VitePWAOptions> = {
   //   ],
   // },
   // mode: 'development',
-  base: '/',
   includeAssets: ['**/*'],
   workbox: {
     globPatterns: ['**/*'],
