@@ -1,26 +1,29 @@
 <template>
   <div class="btm-nav bg-default">
-    <button class="flex" @click="goTo('profile')">
-      <UserIcon class="h-5 w-5 me-1"/>
+    <router-link :to="{ name: 'profile' }" tag="button" class="flex">
+      <div v-if="avatar" class="w-5">
+        <img alt="user profile image" :src="avatar" class="rounded-full" />
+      </div>
+      <UserIcon v-else class="h-5 w-5" />
       <span class="btm-nav-label">Profile</span>
-    </button>
-    <button class="flex" @click="goTo('movements-new')">
-      <PlusCircleIcon class="h-12 w-12"/>      
-    </button>
-    <button class="flex" @click="goTo('retry')">
-      <QueueListIcon class="h-5 w-5 me-1"/>
+    </router-link>
+    <router-link :to="{ name: 'movements-new' }" tag="button" class="flex">
+      <PlusCircleIcon class="h-12 w-12" />
+    </router-link>
+    <router-link :to="{ name: 'retry' }" tag="button" class="flex">
+      <QueueListIcon class="h-5 w-5" />
       <span class="btm-nav-label">Queue</span>
-    </button>
+    </router-link>
   </div>
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { HomeIcon, UserIcon, QueueListIcon } from '@heroicons/vue/24/solid';
 import { PlusCircleIcon } from '@heroicons/vue/24/outline';
-import { useRouter } from 'vue-router';
-const router = useRouter();
+import { useAuthStore } from '../stores/authStore.ts';
 
-const goTo = (name: string) => {
-  router.push({ name });
-};
+const authStore = useAuthStore();
+const { avatar } = storeToRefs(authStore);
 </script>
+
