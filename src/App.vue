@@ -8,12 +8,13 @@ import { useAuthStore } from './stores/authStore';
 import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
-
+import { useNotifyStore, NotificationType } from './stores/notifyStore.ts';
 const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
 
+const notifyStore = useNotifyStore();
 const queueStore = useRetryQueueStore();
 
 onBeforeMount(async () => {
@@ -29,13 +30,16 @@ onBeforeMount(async () => {
   }
 
   await queueStore.getRequests();
-});
 
-console.log('message listener')
-navigator.serviceWorker.addEventListener('message', event => {
- if (event.data && event.data.type === 'TEST') {
-   console.log('GOT EM')
- }
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'RETRY') {
+      const count = event.data.success;
+      notifyStore.notify(
+        `${count} container movements have been submitted successfully.`,
+        NotificationType.Success
+      );
+    }
+  });
 });
 </script>
 

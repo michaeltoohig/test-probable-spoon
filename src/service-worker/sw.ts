@@ -13,14 +13,14 @@ import { RETRY_QUEUE } from '../constants';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
 
 // Give TypeScript the correct global.
-declare let self: ServiceWorkerGlobalScope
+declare let self: ServiceWorkerGlobalScope;
 
 interface BackgroundSyncEvent extends ExtendableEvent {
   tag: string;
 }
 
 interface PeriodicBackgroundSyncEvent extends ExtendableEvent {
-	tag: string;
+  tag: string;
 }
 
 self.addEventListener('message', (event) => {
@@ -40,11 +40,12 @@ cleanupOutdatedCaches();
 //   allowlist = [/^\/$/]
 
 // to allow work offline
-registerRoute(new NavigationRoute(
-  createHandlerBoundToURL('index.html'),
-  // { allowlist },
-));
-
+registerRoute(
+  new NavigationRoute(
+    createHandlerBoundToURL('index.html')
+    // { allowlist },
+  )
+);
 
 // registerRoute(
 //   ({ request }) => request.mode === 'navigate',
@@ -56,7 +57,13 @@ registerRoute(new NavigationRoute(
 
 // Cache API Get requests
 const matchDirectusApiCb = ({ url }) => {
-  return (url.origin === 'http://localhost:8055' && (url.pathname === '/items/Containers' || url.pathname === '/items/Locations' || url.pathname === '/items/MovementCodes' || url.pathname === '/items/Movements')) 
+  return (
+    url.origin === 'http://localhost:8055' &&
+    (url.pathname === '/items/Containers' ||
+      url.pathname === '/items/Locations' ||
+      url.pathname === '/items/MovementCodes' ||
+      url.pathname === '/items/Movements')
+  );
 };
 registerRoute(
   matchDirectusApiCb,
@@ -65,10 +72,10 @@ registerRoute(
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
-      })
-    ]
+      }),
+    ],
   })
-)
+);
 
 // // const matchPostMovementCb = ({ url, request }) => {
 // //   console.log('r', request)
@@ -112,26 +119,37 @@ const retryQueue = new Queue(RETRY_QUEUE, {
   maxRetentionTime: 3 * 24 * 60,
 });
 
-setInterval(() => {
-  console.log('test msg');
-  self.clients.matchAll().then(clients => {
-    clients.forEach(client => client.postMessage({
-      type: "TEST",
-      payload: {
-        count: 777,
-      },
-    }));
+// setInterval(() => {
+//   console.log('test msg');
+//   self.clients.matchAll().then((clients) => {
+//     clients.forEach((client) =>
+//       client.postMessage({
+//         type: 'TEST',
+//         payload: {
+//           count: 777,
+//         },
+//       })
+//     );
+//   });
+// }, 8000);
+//
+const messageClientsRetryResults = (success: number = 0) => {
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) =>
+      client.postMessage({
+        type: 'RETRY',
+        success: success,
+      })
+    );
   });
-}, 2000);
+};
 
 const retryEndpoints = ['/items/Movements'];
 self.addEventListener('fetch', (event) => {
-
-
   if (event.request.method !== 'POST') {
     return;
   }
-  
+
   if (!retryEndpoints.some((path: string) => event.request.url.includes(path))) {
     return;
   }
@@ -140,7 +158,7 @@ self.addEventListener('fetch', (event) => {
     try {
       const response = await fetch(event.request.clone());
       if (response.status == 401) {
-        console.log('[retry] auth error')
+        console.log('[retry] auth error');
         const newToken = refreshToken();
         const clonedRequest = event.request.clone();
         clonedRequest.headers.set('Authorization', `Bearer ${newToken}`);
@@ -156,7 +174,7 @@ self.addEventListener('fetch', (event) => {
       const newRequest = new Request(event.request, {
         headers: {
           ...event.request.headers,
-          'Authorization': 'Bearer force-auth-fail',
+          Authorization: 'Bearer force-auth-fail',
         },
       });
       // const clonedRequest = event.request.clone();
@@ -176,13 +194,14 @@ const refreshToken = () => {
 };
 
 const replayBgSyncQueue = () => {
-  retryQueue.
-  retryQueue.replayRequests().then(() => {
-    console.log("success replay");
-  })
-  .catch(() => {
-    console.error("failed replay");
-  })
+  retryQueue.retryQueue
+    .replayRequests()
+    .then(() => {
+      console.log('success replay');
+    })
+    .catch(() => {
+      console.error('failed replay');
+    });
 };
 
 self.addEventListener('message', (event) => {
@@ -191,7 +210,6 @@ self.addEventListener('message', (event) => {
     replayBgSyncQueue();
   }
 });
-
 
 // // example only
 // const matchCb = ({ url }) => {
