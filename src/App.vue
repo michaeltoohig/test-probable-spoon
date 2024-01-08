@@ -28,14 +28,14 @@ onBeforeMount(async () => {
     }
   }
 
-  await queueStore.updateCount();
-  // this doesn't work
-  // console.info('[App] Init service worker client');
-  // if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-  //   navigator.serviceWorker.controller.postMessage({
-  //     command: 'INIT',
-  //   });
-  // }
+  await queueStore.getRequests();
+});
+
+console.log('message listener')
+navigator.serviceWorker.addEventListener('message', event => {
+ if (event.data && event.data.type === 'TEST') {
+   console.log('GOT EM')
+ }
 });
 </script>
 

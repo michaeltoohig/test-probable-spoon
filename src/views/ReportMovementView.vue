@@ -29,14 +29,15 @@
           class="select select-primary w-full max-w-lg"
         >
           <option disabled selected>Select an Area!</option>
-          <option v-for="a in areas" :key="a" :value="a">
-            {{ a }}
+          <option v-for="a in areas" :key="a.id" :value="a.name">
+            {{ a.name }}
           </option>
         </select>
       </div>
       
       <div class="form-control w-full max-w-lg col-span-2">
         <label class="label">
+
           <span class="label-text text-lg font-semibold leading-tight">Location</span>
         </label>
         <select
@@ -120,90 +121,48 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { directus } from '../services/directus';
-import type { MovementCode, Location, Container } from '../services/directus';
 import { formatISO, getHours, getMinutes, sub, isFuture, parseISO, parse } from 'date-fns';
 import { useForm } from '@vorms/core';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { storeToRefs } from 'pinia';
-import { compileScript } from 'vue/compiler-sfc';
+import { useRetryQueueStore } from '../stores/retryQueueStore';
+import useContainers from '../composables/useContainers';
+import useMovementCodes from '../composables/useMovementCodes';
+import useLocations from '../composables/useLocations';
+import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = useRouter();
+const queueStore = useRetryQueueStore();
 const notifyStore = useNotifyStore();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+const { isOnline } = useOnlineStatus();
 
 // Setup initial select values
 
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const hours = Array.from({ length: 24 }, (_, i) => i);
 
-const containers = ref<Container[]>([]);
-directus
-  .items('Containers')
-  .readByQuery({
-    limit: -1,
-    // @ts-ignore
-    fields: ['id', 'code', 'type'],
-    // @ts-ignore
-    sort: 'code',
-  })
-  .then((resp: any) => {
-    containers.value = resp.data;
-  });
-
-const movementCodes = ref<MovementCode[]>([]);
-directus
-  .items('MovementCodes')
-  .readByQuery({
-    limit: -1,
-    // @ts-ignore
-    fields: ['id', 'code'],
-  })
-  .then((resp: any) => {
-    movementCodes.value = resp.data;
-  });
-
-const locations = ref<Location[]>([]);
-directus
-  .items('Locations')
-  .readByQuery({
-    limit: -1,
-    // @ts-ignore
-    fields: ['id', 'name', 'area.id', 'area.name'],
-  })
-  .then((resp: any) => {
-    locations.value = resp.data;
-  });
-
+const { containers, promise: containerPromise } = useContainers();
+const { movementCodes, promise: movementCodesPromise } = useMovementCodes();
+const { areas, locations, promise: locationsPromise } = useLocations();
 const area = ref(null);
-const areas = computed(() => {
-  if (!locations.value) return []
-  return Array.from(new Set(locations.value.map((loc) => loc.area.name)))
-})
 const areaLocations = computed(() => {
-  if (!area.value) return []
-  return locations.value.filter((loc) => loc.area.name === area.value)
-})
-// const groupedLocations = computed(() => {
-//   return locations.value.reduce(
-//     (grouped: { [key: string]: Array<{ id: string; name: string }> }, location) => {
-//       const key = location.area.name;
-//       if (!grouped[key]) {
-//         grouped[key] = [];
-//       }
-//       grouped[key].push(location);
-//       return grouped;
-//     },
-//     {}
-//   );
-// });
+  if (!area.value) return [];
+  return locations.value.filter((loc) => loc.area.name === area.value);
+});
+
+onMounted(async () => {
+  await containerPromise;
+  await movementCodesPromise;
+  await locationsPromise;
+});
 
 // Setup form validation
-
 const { errors, register, handleSubmit, handleReset, validateField } = useForm({
   initialValues: {
     container: '',
@@ -217,7 +176,9 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       return;
     }
 
-    // if offline; return; no need to check this then let it fail when posted online
+    // When offline no need to validate as it will fail to POST
+    if (!isOnline) return;
+
     try {
       const response = await directus.items('Movements').readByQuery({
         filter: {
@@ -266,7 +227,7 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       console.error(err);
       notifyStore.notify('Something went wrong', NotificationType.Error);
     } finally {
-      console.log('todo update queue length count')
+      await queueStore.updateCount();
     }
   },
 });
@@ -307,8 +268,6 @@ const date = ref(formatISO(new Date(), { representation: 'date' }));
 const hour = ref(getHours(new Date()));
 const minute = ref(getMinutes(new Date()));
 watch([date, hour, minute], () => {
-  console.log(hour.value, minute.value);
-  console.log(parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value)));
   date_reported.value = formatISO(
     parse(`${hour.value}:${minute.value}:00+1100`, 'HH:mm:ssxx', parseISO(date.value))
   );
@@ -324,7 +283,6 @@ const setSelectedTime = (value: string) => {
   }
   hour.value = getHours(date);
   minute.value = getMinutes(date);
-  // time.value = formatISO(date, { representation: 'time' });
 };
 
 const setSelectedDate = (day: string) => {

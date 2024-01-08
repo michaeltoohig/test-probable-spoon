@@ -3,6 +3,7 @@ import LoginView from '@/views/LoginView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import BaseLayout from '@/views/BaseLayout.vue';
 import HomeView from '@/views/HomeView';
+import RetryView from '@/views/RetryView';
 import ProfileView from '@/views/ProfileView';
 import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
@@ -39,17 +40,11 @@ const router = createRouter({
         {
           path: '/profile',
           name: 'profile',
-          // route level code-splitting
-          // this generates a separate chunk (Profile.[hash].js) for this route
-          // which is lazy-loaded when the route is visited.
           component: ProfileView,
         },
         {
           path: '/about',
           name: 'about',
-          // route level code-splitting
-          // this generates a separate chunk (About.[hash].js) for this route
-          // which is lazy-loaded when the route is visited.
           component: AboutView,
         },
         {
@@ -62,6 +57,11 @@ const router = createRouter({
           path: '/movements/new',
           name: 'movements-new',
           component: ReportMovementView,
+        },
+        {
+          path: '/retry',
+          name: 'retry',
+          component: RetryView,
         },
       ],
     },

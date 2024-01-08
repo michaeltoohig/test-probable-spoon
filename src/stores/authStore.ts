@@ -57,27 +57,20 @@ export const useAuthStore = defineStore('auth', {
         await directus.auth.logout();
       } finally {
         this.user = null;
-        // await directus.auth.static(staticToken);
       }
     },
     async getCurrentUser() {
       try {
         const me = await directus.users.me.read();
-        this.user = me as UserType;
+        this.user = me as UserType;  // does not save to local storage correctly
         if (this.user.avatar) {
           this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
         } else {
           this.avatar = 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
         }
-
-        // if (user.email !== undefined) {
-        // } else {
-        //   await directus.auth.static(staticToken);
-        // }
       } catch (err) {
         console.error('Get Current User Failed', err);
         throw err;
-        // await directus.auth.static(staticToken);
       }
     },
     async login(credentials: LoginForm) {
@@ -92,8 +85,6 @@ export const useAuthStore = defineStore('auth', {
         //   // this.router.push({ name: 'map' });
         // }
       } catch (err: any) {
-        // correct for missing auth after the failed login attempt
-        // await directus.auth.static(staticToken);
         // handle the error
         console.error('User Login Failed', err);
         const error = err.response?.data?.errors[0]?.extensions?.code || err;

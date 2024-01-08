@@ -1,1 +1,1 @@
-export const RETRY_QUEUE = 'ssc-retry-queue';
+export const RETRY_QUEUE = 'ssc-retry-movements';

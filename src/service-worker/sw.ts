@@ -10,6 +10,7 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { RETRY_QUEUE } from '../constants';
+import { useRetryQueueStore } from '../stores/retryQueueStore';
 
 // Give TypeScript the correct global.
 declare let self: ServiceWorkerGlobalScope
@@ -69,10 +70,6 @@ registerRoute(
   })
 )
 
-// const bgSyncPlugin = new BackgroundSyncPlugin('sscQueue', {
-//   maxRetentionTime: 60 * 24 * 3, // Retry for max of 3 days
-// });
-
 // // const matchPostMovementCb = ({ url, request }) => {
 // //   console.log('r', request)
 // //   // return url.origin === 'http://localhost:8055' && url.pathname === '/items/Movements'
@@ -86,26 +83,85 @@ registerRoute(
 //   'POST',
 // );
 
-const sscQueuePosts = new Queue(RETRY_QUEUE, {
+// Retry Failed POST requests
+// const bgSyncPlugin = new BackgroundSyncPlugin(RETRY_QUEUE, {
+//   maxRetentionTime: 60 * 24 * 3, // Retry for max of 3 days
+// });
+// bgSyncPlugin
+
+// const statusPlugin = {
+//   fetchDidSucceed: ({ response }) => {
+//     if (response.status >= 500) {
+//       throw new Error('Server error');
+//     }
+//     return response;
+//   },
+// };
+
+// registerRoute(
+//   '/items/Movements',
+//   new NetworkOnly({
+//     plugins: [
+//       statusPlugin,
+//       bgSyncPlugin,
+//     ]
+//   })
+// )
+
+const retryQueue = new Queue(RETRY_QUEUE, {
   maxRetentionTime: 3 * 24 * 60,
 });
-const pathsToQueue = ['/items/Movements'];
 
+setInterval(() => {
+  console.log('test msg');
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => client.postMessage({
+      type: "TEST",
+      payload: {
+        count: 777,
+      },
+    }));
+  });
+}, 2000);
+
+const retryEndpoints = ['/items/Movements'];
 self.addEventListener('fetch', (event) => {
+
+
   if (event.request.method !== 'POST') {
     return;
   }
   
-  if (!pathsToQueue.some((path: string) => event.request.url.includes(path))) {
+  if (!retryEndpoints.some((path: string) => event.request.url.includes(path))) {
     return;
   }
 
   const bgSyncLogic = async () => {
     try {
       const response = await fetch(event.request.clone());
+      if (response.status == 401) {
+        console.log('[retry] auth error')
+        const newToken = refreshToken();
+        const clonedRequest = event.request.clone();
+        clonedRequest.headers.set('Authorization', `Bearer ${newToken}`);
+
+        const response = await fetch(clonedRequest);
+        if (response.status >= 500) {
+          throw new Error('Server error.');
+        }
+        return response;
+      }
       return response;
     } catch (error) {
-      await sscQueuePosts.pushRequest({ request: event.request });
+      const newRequest = new Request(event.request, {
+        headers: {
+          ...event.request.headers,
+          'Authorization': 'Bearer force-auth-fail',
+        },
+      });
+      // const clonedRequest = event.request.clone();
+      // clonedRequest.headers.set('Authorization', 'Bearer force-auth-fail');
+      await retryQueue.pushRequest({ request: newRequest });
       return error;
     }
   };
@@ -113,8 +169,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(bgSyncLogic());
 });
 
+const refreshToken = () => {
+  // Get the current auth token from local storage; requires user to login recently to work.
+  const storedToken = localStorage.getItem('auth_token');
+  return storedToken;
+};
+
 const replayBgSyncQueue = () => {
-  sscQueuePosts.replayRequests().then(() => {
+  retryQueue.
+  retryQueue.replayRequests().then(() => {
     console.log("success replay");
   })
   .catch(() => {

@@ -1,24 +1,30 @@
 import { defineStore } from 'pinia';
 import { openDB } from 'idb';
-import { RETRY_QUEUE } from '../constants';
+// import { RETRY_QUEUE } from '../constants';
+
+interface RetryRequest {
+  id: number;
+  data: any;
+}
 
 interface State {
-  count: number;
+  requests: RetryRequest[];
 };
 
 export const useRetryQueueStore = defineStore('queue', {
   state: (): State => ({
-    count: 0,
+    requests: [],
   }),
-  actions: {
-    setCount(count: number) {
-      this.count = count;
+  getters: {
+    count(): number {
+      return this.requests.length;
     },
-    async updateCount() {
-      const db = await openDB('requests');
-      const count = await db.transaction(RETRY_QUEUE).objectStore(RETRY_QUEUE).count();
-      console.log("found count", count);
-      this.count = count;
+  },
+  actions: {
+    async getRequests() {
+      const db = await openDB('workbox-background-sync');
+      const items = await db.transaction('requests').objectStore('requests').getAll()
+      this.requests = items;
     },
   },
  });
