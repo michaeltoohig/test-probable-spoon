@@ -9,7 +9,7 @@ import { CacheFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategie
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { RETRY_QUEUE } from '../constants';
+import { RETRY_QUEUE, RETRY_MESSAGE_KEY } from '../constants';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
 
 // Give TypeScript the correct global.
@@ -133,12 +133,13 @@ const retryQueue = new Queue(RETRY_QUEUE, {
 //   });
 // }, 8000);
 //
-const messageClientsRetryResults = (success: number = 0) => {
+const messageClientsRetryResults = (success: number = 0, failure: number = 0) => {
   self.clients.matchAll().then((clients) => {
     clients.forEach((client) =>
       client.postMessage({
-        type: 'RETRY',
+        type: RETRY_MESSAGE_KEY,
         success: success,
+        failure: failure,
       })
     );
   });

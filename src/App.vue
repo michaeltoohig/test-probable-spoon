@@ -9,6 +9,7 @@ import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
 import { useNotifyStore, NotificationType } from './stores/notifyStore.ts';
+import useRetryQueueEventListener from './composables/useRetryQueueEventListener.ts';
 const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
@@ -16,6 +17,9 @@ const { isLoggedIn } = storeToRefs(authStore);
 
 const notifyStore = useNotifyStore();
 const queueStore = useRetryQueueStore();
+
+// setup app side event listener for sw events
+useRetryQueueEventListener();
 
 onBeforeMount(async () => {
   console.info('[App] Checking auth onBeforeMount');
@@ -30,16 +34,6 @@ onBeforeMount(async () => {
   }
 
   await queueStore.getRequests();
-
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'RETRY') {
-      const count = event.data.success;
-      notifyStore.notify(
-        `${count} container movements have been submitted successfully.`,
-        NotificationType.Success
-      );
-    }
-  });
 });
 </script>
 
