@@ -30,7 +30,6 @@
           <!-- head -->
           <thead>
             <tr>
-              <th>ID</th>
               <th>Container</th>
               <th>Area</th>
               <th>Location</th>
@@ -40,7 +39,6 @@
           </thead>
           <tbody>
             <tr class="hover" v-for="m in retries" :key="m.id">
-              <td>{{ m.id }}</td>
               <td>{{ m.data.container.code }}</td>
               <td>{{ m.data.location.area.name }}</td>
               <td>{{ m.data.location.name }}</td>
