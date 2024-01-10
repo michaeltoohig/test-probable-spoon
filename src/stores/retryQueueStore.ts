@@ -9,7 +9,7 @@ interface RetryRequest {
 
 interface State {
   requests: RetryRequest[];
-};
+}
 
 export const useRetryQueueStore = defineStore('queue', {
   state: (): State => ({
@@ -22,9 +22,15 @@ export const useRetryQueueStore = defineStore('queue', {
   },
   actions: {
     async getRequests() {
-      const db = await openDB('workbox-background-sync');
-      const items = await db.transaction('requests').objectStore('requests').getAll()
-      this.requests = items;
+      try {
+        const db = await openDB('workbox-background-sync');
+        const items = await db.transaction('requests').objectStore('requests').getAll();
+        this.requests = items;
+      } catch (error) {
+        console.error('Failed to query pending requests');
+        this.requests = [];
+      }
     },
   },
- });
+});
+

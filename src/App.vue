@@ -22,6 +22,8 @@ const queueStore = useRetryQueueStore();
 useRetryQueueEventListener();
 
 onBeforeMount(async () => {
+  console.log('TODO [App] Checking preferred color theme');
+
   console.info('[App] Checking auth onBeforeMount');
   if (isOnline && isLoggedIn.value) {
     try {
@@ -33,6 +35,7 @@ onBeforeMount(async () => {
     }
   }
 
+  console.log('[App] Checking retry queue');
   await queueStore.getRequests();
 });
 </script>

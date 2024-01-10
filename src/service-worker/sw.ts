@@ -61,8 +61,6 @@ registerRoute(
   })
 );
 
-
-
 // https://stackoverflow.com/questions/67497413/communicating-a-successful-workbox-background-sync-replay-to-open-clients
 /*
 async function postSuccessMessage(response) {
@@ -108,10 +106,8 @@ registerRoute(
 );
 */
 
-
 // Seems like to call onSync we need to use the official message trigger 'workbox-background-sync:sync' or something
 // We can not use `replayRequests` as that always uses their own logic
-
 
 const retryEndpoints = ['/items/Movements'];
 self.addEventListener('fetch', (event: FetchEvent) => {
@@ -145,7 +141,7 @@ const retryQueue = new Queue(RETRY_QUEUE, {
   onSync: async ({ queue }) => {
     console.log('in onSync');
     let entry;
-    while (entry = await queue.shiftRequest()) {
+    while ((entry = await queue.shiftRequest())) {
       try {
         const response = await fetch(entry.request.clone());
         if (!response.ok) {
@@ -172,8 +168,11 @@ const retryQueue = new Queue(RETRY_QUEUE, {
         await queue.unshiftRequest(entry);
       }
     }
-  }
+  },
 });
+
+console.log('register sync event');
+// retryQueue.registerSync();
 
 interface MessageEventData {
   command: string;
@@ -191,7 +190,7 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 const replayBgSyncQueue = async () => {
   console.log('replay start');
   let entry;
-  while (entry = await retryQueue.shiftRequest()) {
+  while ((entry = await retryQueue.shiftRequest())) {
     console.log('Got entry', entry);
     try {
       await fetch(entry.request.clone());
@@ -230,42 +229,42 @@ const replayBgSyncQueue = async () => {
 //       console.error('Failed to send data, adding to retry queue', error);
 //       await retryQueue.pushRequest({ request: event.request.clone() });
 //       return new Response('', { status: 503 });
-      // await retryQueue.pushRequest({
-      //   request: event.request.clone(),
-      //   metadata: {
-      //     url: event.request.url,
-      //     method: event.request.method,
-      //     headers: event.request.headers,
-      //   },
-      // });
+// await retryQueue.pushRequest({
+//   request: event.request.clone(),
+//   metadata: {
+//     url: event.request.url,
+//     method: event.request.method,
+//     headers: event.request.headers,
+//   },
+// });
 //    }
-    // try {
-    //   const response = await fetch(event.request.clone());
-    //   if (response.status == 401) {
-    //     console.log('[retry] auth error');
-    //     const newToken = refreshToken();
-    //     const clonedRequest = event.request.clone();
-    //     clonedRequest.headers.set('Authorization', `Bearer ${newToken}`);
+// try {
+//   const response = await fetch(event.request.clone());
+//   if (response.status == 401) {
+//     console.log('[retry] auth error');
+//     const newToken = refreshToken();
+//     const clonedRequest = event.request.clone();
+//     clonedRequest.headers.set('Authorization', `Bearer ${newToken}`);
 
-    //     const response = await fetch(clonedRequest);
-    //     if (response.status >= 500) {
-    //       throw new Error('Server error.');
-    //     }
-    //     return response;
-    //   }
-    //   return response;
-    // } catch (error) {
-    //   const newRequest = new Request(event.request, {
-    //     headers: {
-    //       ...event.request.headers,
-    //       Authorization: 'Bearer force-auth-fail',
-    //     },
-    //   });
-    //   // const clonedRequest = event.request.clone();
-    //   // clonedRequest.headers.set('Authorization', 'Bearer force-auth-fail');
-    //   await retryQueue.pushRequest({ request: newRequest });
-    //   return error;
-    // }
+//     const response = await fetch(clonedRequest);
+//     if (response.status >= 500) {
+//       throw new Error('Server error.');
+//     }
+//     return response;
+//   }
+//   return response;
+// } catch (error) {
+//   const newRequest = new Request(event.request, {
+//     headers: {
+//       ...event.request.headers,
+//       Authorization: 'Bearer force-auth-fail',
+//     },
+//   });
+//   // const clonedRequest = event.request.clone();
+//   // clonedRequest.headers.set('Authorization', 'Bearer force-auth-fail');
+//   await retryQueue.pushRequest({ request: newRequest });
+//   return error;
+// }
 //   };
 
 //   event.respondWith(bgSyncLogic(event));
@@ -305,17 +304,17 @@ const refreshToken = () => {
 //     .catch(() => {
 //       console.error('failed replay');
 //     });
-  // const queue = retryQueue as Queue<StoredRequest>;
-  // let entry;
-  // while (entry = await queue.shiftRequest()) {
-  //   try {
-  //     await fetch(entry.request);
-  //     console.log(`Request for ${entry.request.url} has been replayed successfully`);
-  //   } catch (error) {
-  //     console.error(`Request for ${entry.request.url} failed to replay, putting it back in the queue`, error);
-  //     await queue.unshiftRequest(entry);
-  //   }
-  // }
+// const queue = retryQueue as Queue<StoredRequest>;
+// let entry;
+// while (entry = await queue.shiftRequest()) {
+//   try {
+//     await fetch(entry.request);
+//     console.log(`Request for ${entry.request.url} has been replayed successfully`);
+//   } catch (error) {
+//     console.error(`Request for ${entry.request.url} failed to replay, putting it back in the queue`, error);
+//     await queue.unshiftRequest(entry);
+//   }
+// }
 // };
 
 // const messageClientsRetryResults = (success: number = 0, failure: number = 0) => {

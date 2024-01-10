@@ -6,7 +6,7 @@ const isDark = ref<boolean>(
 const defaults = reactive<ThemeOptions>({
   light: 'winter',
   dark: 'night',
-  watchSystemTheme: false,
+  watchSystemTheme: true,
 });
 const currentTheme = ref<DaisyThemes>('winter');
 const pluginInitiated = ref<boolean>(false);
