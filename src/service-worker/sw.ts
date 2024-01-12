@@ -7,13 +7,11 @@ import {
 } from 'workbox-precaching';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { RETRY_QUEUE, RETRY_MESSAGE_KEY } from '../constants';
-import { compileScript } from 'vue/compiler-sfc';
+import { RETRY_MESSAGE_KEY } from '../constants';
 import { addToQueue, deleteFromQueue, getQueue } from './retry-queue';
-import { openDB } from 'idb';
-import ts from 'typescript';
+
+const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL;
 
 // Give TypeScript the correct global.
 declare let self: ServiceWorkerGlobalScope;
@@ -94,21 +92,23 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 });
 
 self.addEventListener('message', (event: ExtendableMessageEvent) => {
-  if (event.data && event.data.type === 'REPLAY_QUEUE') {
-    console.log('got retry message', event.data);
+  console.log('SW received message', event.data);
+  if (event.data && event.data.type === RETRY_MESSAGE_KEY) {
     const authToken = event.data.payload.authToken;
     replayQueue(authToken);
   }
 });
-
+// test
 const replayQueue = async (authToken: string) => {
   console.log('Replay queue begin');
+  let successCount = 0;
+  let failureCount = 0;
   const queue = await getQueue();
   for (const item of queue) {
     try {
       console.log('retrying item', item);
       // TODO use server host envvar
-      await fetch(`http://localhost:8055/items/Movements`, {
+      await fetch(`${DIRECTUS_URL}/items/Movements`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,11 +118,25 @@ const replayQueue = async (authToken: string) => {
       });
       console.log('Success retry; will delete', item.id);
       await deleteFromQueue(item.id);
-      // TODO notify success
+      successCount += 1;
     } catch (error) {
       // Request fails, leave it in the queue
       console.error('Failed to replay item', error);
-      // TODO notify failure
+      failureCount += 1;
     }
   }
+  console.log('end replayQueue');
+  messageClientsRetryResults(successCount, failureCount);
+};
+
+const messageClientsRetryResults = (success: number = 0, failure: number = 0) => {
+  self.clients.matchAll().then((clients) => {
+    clients.forEach((client) =>
+      client.postMessage({
+        type: RETRY_MESSAGE_KEY,
+        success: success,
+        failure: failure,
+      })
+    );
+  });
 };

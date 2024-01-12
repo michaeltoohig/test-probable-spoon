@@ -54,7 +54,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useNotifyStore } from '../stores/notifyStore';
 import { format, parseISO } from 'date-fns';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
 import useContainers from '../composables/useContainers';
@@ -62,23 +61,31 @@ import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
 import { ArrowPathIcon, HandThumbUpIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
 import { storeToRefs } from 'pinia';
+import { RETRY_MESSAGE_KEY } from '../constants';
+import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 
 const retryStore = useRetryQueueStore();
-
+const notifyStore = useNotifyStore();
 const queueStore = useRetryQueueStore();
 const { count } = storeToRefs(queueStore);
 
 const isSyncPendingRequests = ref(false);
 const syncPendingRequests = async () => {
+  console.log('[retry] Message replay queue')
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    const authToken = localStorage.getItem('auth_token'); // XXX this is fragile
+    const authToken = localStorage.getItem('auth_token');
+    if (!authToken) {
+      notifyStore.notify('Failed to retry queue.', NotificationType.Error);
+      return;
+    }
+    console.log('[retry] Got auth token')
     navigator.serviceWorker.controller.postMessage({
-      type: 'REPLAY_QUEUE',
+      type: RETRY_MESSAGE_KEY,
       payload: {
         authToken,
       },
     });
-    isSyncPendingRequests.value = true;
+    isSyncPendingRequests.value = true; // this could be a value in the store, no? yes, then when we send the message from sw it also stops the loading progress bar because we have actual knowledge the requests are complete.
     // TODO remove; we now know how to send message from sw to client
     setTimeout(async () => {
       await getRetryQueue()
