@@ -71,44 +71,41 @@ const { count } = storeToRefs(queueStore);
 const isSyncPendingRequests = ref(false);
 const syncPendingRequests = async () => {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    const authToken = localStorage.getItem('auth_token'); // XXX this is fragile
     navigator.serviceWorker.controller.postMessage({
-      command: 'SYNC',
+      type: 'REPLAY_QUEUE',
+      payload: {
+        authToken,
+      },
     });
     isSyncPendingRequests.value = true;
-    // TODO cancel timeout if success early
+    // TODO remove; we now know how to send message from sw to client
     setTimeout(async () => {
-      await getRequests()
+      await getRetryQueue()
       isSyncPendingRequests.value = false;
     }, 2000);
   }
-}
-
-function arrayBufferToJson(arrayBuffer: ArrayBuffer) {
-   const uint8Array = new Uint8Array(arrayBuffer);
-   const decoder = new TextDecoder();
-   const jsonString = decoder.decode(uint8Array);
-   return JSON.parse(jsonString);
 }
 
 const { containers, promise: containerPromise } = useContainers();
 const { movementCodes, promise: movementCodesPromise } = useMovementCodes();
 const { locations, promise: locationsPromise } = useLocations();
 
-interface Retry {
+interface RetryItem {
   id: number;
   data: any;
 }
 
-const retries = ref<Retry[]>([]);
-const getRequests = async () => {
-  await retryStore.getRequests();
-  retries.value = retryStore.requests.map((r) => {
-    const data = arrayBufferToJson(r.requestData.body);
+const retries = ref<RetryItem[]>([]);
+const getRetryQueue = async () => {
+  await retryStore.getItems();
+  retries.value = retryStore.items.map((item) => {
+    const data = item.payload;
     data.container = containers.value.find((c) => c.id === data.container);
     data.movement_code = movementCodes.value.find((mc) => mc.id === data.movement_code);
     data.location = locations.value.find((l) => l.id === data.location);
     return {
-      id: r.id,
+      id: item.id,
       data: data,
     }
   });
@@ -118,7 +115,7 @@ onMounted(async () => {
   await containerPromise;
   await movementCodesPromise;
   await locationsPromise;
-  await getRequests()
+  await getRetryQueue()
 });
 
 const printDate = (value: string) => {

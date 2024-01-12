@@ -33,7 +33,7 @@ onBeforeMount(async () => {
     }
   }
 
-  await queueStore.getRequests();
+  await queueStore.init();
 });
 </script>
 
