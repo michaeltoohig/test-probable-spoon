@@ -1,5 +1,6 @@
 import { openDB } from 'idb';
 import { RETRY_QUEUE } from '../constants';
+import type { Movement } from '../services/directus';
 
 export const initQueue = async () => {
   console.log('[Queue] Init');
@@ -13,8 +14,8 @@ export const initQueue = async () => {
   });
 };
 
-export const addToQueue = async (request: Request) => {
-  const payload = await request.json();
+export const addToQueue = async (payload: Movement) => {
+  // const payload = await request.json();
   console.log('[Queue] Add one', payload);
   const db = await openDB(RETRY_QUEUE, 1);
   const tx = db.transaction('queue', 'readwrite');
@@ -39,6 +40,7 @@ export const getQueue = async () => {
   const db = await openDB(RETRY_QUEUE, 1);
   const tx = db.transaction('queue', 'readonly');
   const queue = await tx.store.getAll();
+  // add logic for maxRetention if you want that here
   await tx.done;
   return queue;
 };

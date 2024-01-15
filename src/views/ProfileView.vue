@@ -1,10 +1,14 @@
 <template>
   <div class="grid gap-4 md:grid-cols-4">
-    <div>
-      <div class="card card-compact bg-base-300 border-base-300">
-        <figure><img :src="avatar" alt="avatar" /></figure>
-        <div class="card-body">
-          <h2 class="card-title">{{ user.first_name }} {{ user.last_name }}</h2>
+    <div v-if="user">
+      <div :class="[!user.avatar ? 'tooltip tooltip-open tooltip-top' : '']" data-tip="Askem boss i addem foto blong yu lo ples ia.">
+        <div class="card card-compact bg-base-300 border-base-300">
+          <figure v-if="avatar">
+            <img :src="avatar" alt="avatar" />
+          </figure>
+          <div class="card-body">
+            <h2 class="card-title">{{ user.first_name }} {{ user.last_name }}</h2>
+          </div>
         </div>
       </div>
     </div>
@@ -98,7 +102,7 @@ import { useAuthStore } from '../stores/authStore';
 import { directus } from '../services/directus';
 import type { Movement } from '../services/directus';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
-import { format, formatISO, isAfter, parseISO, sub } from 'date-fns';
+import { format, isAfter, parseISO, sub } from 'date-fns';
 
 const notifyStore = useNotifyStore();
 

@@ -17,8 +17,7 @@ export default function useLocations() {
     
   const areas = computed((): Area[] => {
     if (!locations.value) return []
-    // return Array.from(new Set(locations.value.map((loc) => loc.area)))
-    return locations.value.reduce((acc, loc) => {
+    return locations.value.reduce((acc: Area[], loc: Location) => {
       if (!acc.some((i) => i.id === loc.area.id)) {
         acc.push(loc.area);
       }

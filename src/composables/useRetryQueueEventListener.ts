@@ -2,8 +2,6 @@ import { onMounted, onUnmounted } from 'vue';
 import { RETRY_MESSAGE_KEY } from '../constants';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 
-// TODO setup all needed message handlers for the service worker then just load into App.vue
-// maybe rename useServiceWorker ?
 export default function useRetryQueueEventListener() {
   const notifyStore = useNotifyStore();
 
@@ -28,7 +26,6 @@ export default function useRetryQueueEventListener() {
   };
 
   onMounted(() => {
-    console.log('mount sw listener for message');
     navigator.serviceWorker.addEventListener('message', notifyRetryQueueEvent);
   });
 

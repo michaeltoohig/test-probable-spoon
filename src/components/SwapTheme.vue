@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="ts">
+// @ts-ignore
 import { useThemeManager } from '@/plugins/themeManager';
 import { SunIcon, MoonIcon } from '@heroicons/vue/24/solid';
 

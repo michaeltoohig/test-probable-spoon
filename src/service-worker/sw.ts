@@ -8,9 +8,11 @@ import {
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+import type { URL } from 'url';
 import { RETRY_MESSAGE_KEY } from '../constants';
 import { addToQueue, deleteFromQueue, getQueue } from './retry-queue';
 
+// @ts-expect-error
 const DIRECTUS_URL = import.meta.env.VITE_DIRECTUS_URL;
 
 // Give TypeScript the correct global.
@@ -24,6 +26,9 @@ self.addEventListener('message', (event) => {
 });
 
 // self.__WB_MANIFEST is default injection point
+// self.__WB_MANIFEST.push({url: 'favicon.svg'});
+// self.__WB_MANIFEST.push({url: 'default-avatar.png'});
+console.log('precache', self.__WB_MANIFEST);
 precacheAndRoute(self.__WB_MANIFEST || []);
 
 // clean old assets
@@ -42,7 +47,7 @@ registerRoute(
 );
 
 // Cache API GET requests
-const matchDirectusApiCb = ({ url }) => {
+const matchDirectusApiCb = ({ url }: { url: URL }) => {
   return (
     url.origin === 'http://localhost:8055' &&
     (url.pathname === '/items/Containers' ||
@@ -82,9 +87,10 @@ self.addEventListener('fetch', (event: FetchEvent) => {
       return response;
     } catch (error) {
       console.error('Failed to send data, adding to retry queue', error);
-      await addToQueue(event.request.clone())
+      const clonedrequest = event.request.clone();
+      const payload = await clonedrequest.json();
+      await addToQueue(payload);
       throw error;
-      // await retryQueue.pushRequest({ request: event.request.clone() });
     }
   };
 
@@ -98,7 +104,7 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
     replayQueue(authToken);
   }
 });
-// test
+
 const replayQueue = async (authToken: string) => {
   console.log('Replay queue begin');
   let successCount = 0;

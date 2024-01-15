@@ -30,6 +30,7 @@
           <!-- head -->
           <thead>
             <tr>
+              <th class="px-2 max-w-[22px]"></th>
               <th>Container</th>
               <th>Area</th>
               <th>Location</th>
@@ -38,16 +39,41 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="hover" v-for="m in retries" :key="m.id">
-              <td>{{ m.data.container.code }}</td>
-              <td>{{ m.data.location.area.name }}</td>
-              <td>{{ m.data.location.name }}</td>
-              <td>{{ m.data.movement_code.code }}</td>
-              <td>{{ printDate(m.data.date_reported) }}</td>
+            <tr class="hover" v-for="retry in retries" :key="retry.id">
+              <td class="px-2 max-w-[22px]">
+                <label for="delete_retry_modal" @click="setSelected(retry)" class="btn btn-ghost btn-xs">
+                  <TrashIcon class="h-4 w-4" />
+                </label>
+              </td>
+              <td>{{ retry.data.container.code }}</td>
+              <td>{{ retry.data.location.area.name }}</td>
+              <td>{{ retry.data.location.name }}</td>
+              <td>{{ retry.data.movement_code.code }}</td>
+              <td>{{ printDate(retry.data.date_reported) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+
+    <input type="checkbox" id="delete_retry_modal" class="modal-toggle" />
+    <div class="modal" role="dialog">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Remove From Retry Queue?</h3>
+        <ul class="py-4">
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Container:</span> {{ selected?.data.container.code }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Area:</span> {{ selected?.data.location.area.name }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Location:</span> {{ selected?.data.location.name }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">MC:</span> {{ selected?.data.movement_code.code }}</li>
+        </ul>
+        <div class="modal-action flex row justify-between">
+          <label for="delete_retry_modal" class="btn btn-error" @click="deletedSelected">
+            Delete
+          </label>
+          <label for="delete_retry_modal" class="btn">Close</label>
+        </div>
+      </div>
+      <label class="modal-backdrop" for="delete_retry_modal">Close</label>
     </div>
   </div>
 </template>
@@ -63,12 +89,25 @@ import { ArrowPathIcon, HandThumbUpIcon, InformationCircleIcon } from '@heroicon
 import { storeToRefs } from 'pinia';
 import { RETRY_MESSAGE_KEY } from '../constants';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
+import { TrashIcon } from '@heroicons/vue/24/solid'
+import { deleteFromQueue } from '../service-worker/retry-queue';
 
 const retryStore = useRetryQueueStore();
 const notifyStore = useNotifyStore();
 const queueStore = useRetryQueueStore();
 const { count } = storeToRefs(queueStore);
 
+const selected = ref<RetryItem>();
+const setSelected = (item: RetryItem) => {
+  selected.value = item;
+};
+const deletedSelected = async () => {
+  if (!selected.value) return;
+  await deleteFromQueue(selected.value.id);
+  notifyStore.notify('Container movement successfully removed from retry queue', NotificationType.Info);
+  selected.value = undefined;
+  await getRetryQueue();
+}
 const isSyncPendingRequests = ref(false);
 const syncPendingRequests = async () => {
   console.log('[retry] Message replay queue')

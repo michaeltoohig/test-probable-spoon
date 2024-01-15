@@ -7,10 +7,10 @@ import NavBottom from '../components/NavBottom.vue';
   <header>
     <NavBar />
   </header>
-  <main>
+  <main class="mb-16">
     <RouterView />
-    <NavBottom />
   </main>
+  <NavBottom />
 </template>
 
 <style scoped>

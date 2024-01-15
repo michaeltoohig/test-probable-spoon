@@ -29,9 +29,9 @@ export interface Movement {
   container: Container;
   location: Location;
   movement_code: MovementCode;
-  reported_by: string;
+  reported_by: string | undefined;
   date_reported: string;
-  date_created: string;
+  date_created: string | undefined;
 }
 
 interface Schema {
@@ -43,6 +43,7 @@ interface Schema {
 }
 
 // const directus = createDirectus<Schema>(import.meta.env.VITE_DIRECTUS_URL).with(rest()).with(authentication());
+// @ts-expect-error
 const directus = new Directus<Schema>(import.meta.env.VITE_DIRECTUS_URL);
 
 export { directus };

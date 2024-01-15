@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+// @ts-ignore
 import { useThemeManager } from '@/plugins/themeManager';
 
 const $theme = useThemeManager();

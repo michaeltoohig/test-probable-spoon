@@ -2,6 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia';
 import { Ref } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { directus } from '../services/directus';
+import defaultAvatar from '../assets/default-avatar.png?url';
 
 // @see https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
 export const EMAIL_REGEX =
@@ -64,9 +65,10 @@ export const useAuthStore = defineStore('auth', {
         const me = await directus.users.me.read();
         this.user = me as UserType;  // does not save to local storage correctly
         if (this.user.avatar) {
+          // @ts-expect-errors
           this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
         } else {
-          this.avatar = 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
+          this.avatar = defaultAvatar;
         }
       } catch (err) {
         console.error('Get Current User Failed', err);
@@ -102,6 +104,8 @@ export const useAuthStore = defineStore('auth', {
   },
 });
 
+// @ts-expect-errors
 if (import.meta.hot) {
+  // @ts-expect-errors
   import.meta.hot.accept(acceptHMRUpdate(useAuthStore, import.meta.hot));
 }

@@ -1,39 +1,50 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import SwapTheme from './SwapTheme.vue';
+import useOnlineStatus from '../composables/useOnlineStatus';
+import { ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
+import { useInstallPromptStore } from '../stores/installPromptStore';
+import { storeToRefs } from 'pinia';
+import { Bars3CenterLeftIcon as MenuIcon } from '@heroicons/vue/24/solid';
 
+const { isOnline } = useOnlineStatus();
+const installPromptStore = useInstallPromptStore();
+const { installPromptAvailable } = storeToRefs(installPromptStore);
 </script>
 
 <template>
-  <div class="navbar bg-primary text-primary-content">
+  <div :class="[isOnline ? 'navbar bg-primary text-primary-content' : 'navbar bg-error text-error-content']">
     <div class="navbar-start"></div>
     <div class="navbar-center">
-      <RouterLink to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
+      <div v-if="!isOnline" class="tooltip tooltip-bottom" data-tip="You are Offline!">
+        <RouterLink to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
+      </div>
+      <RouterLink v-else to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
     </div>
     <div class="navbar-end">
       <SwapTheme />
       <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h8m-8 6h16"
-            />
-          </svg>
+        <div tabindex="0" role="button" class="btn btn-ghost">
+          <MenuIcon class="w-6 h-6" />
+          <div v-if="installPromptAvailable" class="badge badge-xs badge-error" ></div>
         </div>
         <ul
           class="menu menu-sm dropdown-content mt-3 z-[100] p-2 shadow bg-primary rounded-box w-52"
         >
-          <div class="hidden divider my-0 px-3"></div>
-          <li><RouterLink :to="{ name: 'logout' }">Logout</RouterLink></li>
+          <li v-if="installPromptAvailable">
+            <a href="#" @click="installPromptStore.showInstallPrompt">
+              <SparklesIcon class="w-5 h-5" />
+              Install App!
+              <span class="badge badge-xs badge-error"></span>
+            </a>
+          </li>
+          <div v-if="installPromptAvailable" class="divider my-0 px-3"></div>
+          <li>
+            <RouterLink :to="{ name: 'logout' }">
+              <ArrowLeftStartOnRectangleIcon class="w-5 h-5" />
+              Logout
+            </RouterLink>
+          </li>
         </ul>
       </div>
     </div>

@@ -1,4 +1,5 @@
-import { createApp, markRaw } from 'vue';
+import { createApp } from 'vue';
+// @ts-ignore
 import App from './App.vue';
 import router from './router';
 // import { useRouter } from 'vue-router'

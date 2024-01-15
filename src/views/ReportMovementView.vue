@@ -130,13 +130,14 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { storeToRefs } from 'pinia';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
+// import type { Movement } from '../services/directus';
 import useContainers from '../composables/useContainers';
 import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
 import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = useRouter();
-const queueStore = useRetryQueueStore();
+const retryStore = useRetryQueueStore();
 const notifyStore = useNotifyStore();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -218,16 +219,26 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       return false;
     }
   },
-  async onSubmit(data) {
-    try {
-      await directus.items('Movements').createOne(data);
-      notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
-      router.push({ name: 'home' });
-    } catch (err) {
-      console.error(err);
-      notifyStore.notify('Something went wrong', NotificationType.Error);
-    } finally {
-      await queueStore.updateCount();
+  async onSubmit(data: any) {
+    // it appears isOnline is not respected as the service worker thinks it is online when testing.
+    if (!isOnline) {
+      console.log('you are offline; adding to queue')
+      await retryStore.addItem(data);
+      notifyStore.notify('Added to retry queue. Please retry when you are online again.', NotificationType.Info);
+      router.push({ name: 'retry' });
+    } else {
+      console.log('you are online; submitting')
+      try {
+        await directus.items('Movements').createOne(data);
+        notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
+        router.push({ name: 'home' });
+      } catch (err) {
+        console.error(err);
+        notifyStore.notify('Something went wrong. The request was added to the retry queue.', NotificationType.Error);
+        router.push({ name: 'retry' });
+      } finally {
+        await retryStore.getItems();
+      }
     }
   },
 });

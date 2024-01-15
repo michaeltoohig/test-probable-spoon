@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { deleteFromQueue, getQueue, initQueue } from '../service-worker/retry-queue';
+import { addToQueue, deleteFromQueue, getQueue, initQueue } from '../service-worker/retry-queue';
+import type { Movement } from '../services/directus';
 
 interface RetryQueueItem {
   id: number;
@@ -27,6 +28,9 @@ export const useRetryQueueStore = defineStore('queue', {
     async getItems() {
       const items = await getQueue();
       this.items = items;
+    },
+    async addItem(payload: Movement) {
+      await addToQueue(payload);
     },
     async deleteItem(id: number) {
       await deleteFromQueue(id);

@@ -1,19 +1,21 @@
 <script setup lang="ts">
+// @ts-ignore
 import { useRegisterSW } from 'virtual:pwa-register/vue';
-import { pwaInfo } from 'virtual:pwa-info';
 
-// eslint-disable-next-line no-console
-// console.log('pwaInfo', pwaInfo);
+interface OnRegisteredSWParams {
+ swUrl: string;
+ r: ServiceWorkerRegistration | null;
+}
 
 // replaced dyanmicaly
 const reloadSW: any = '__RELOAD_SW__';
 
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
-  onRegisterError(error) {
+  onRegisterError(error: Error) {
     console.log('sw err', error);
   },
-  onRegisteredSW(swUrl, r) {
+  onRegisteredSW({ swUrl, r }: OnRegisteredSWParams) {
     // eslint-disable-next-line no-console
     console.log(`Service Worker at: ${swUrl}`, reloadSW);
     if (reloadSW === 'true') {

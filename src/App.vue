@@ -9,6 +9,7 @@ import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
 import useRetryQueueEventListener from './composables/useRetryQueueEventListener.ts';
+import useInstallPromptEventListeners from './composables/useInstallPromptEventListeners.ts';
 const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
@@ -16,8 +17,10 @@ const { isLoggedIn } = storeToRefs(authStore);
 
 const queueStore = useRetryQueueStore();
 
-// setup app side event listener for sw events
+// setup app event listener for sw events
 useRetryQueueEventListener();
+// setup event listeners for sw install prompt
+useInstallPromptEventListeners();
 
 onBeforeMount(async () => {
   console.info('[App] Checking auth onBeforeMount');

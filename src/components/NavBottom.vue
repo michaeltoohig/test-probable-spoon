@@ -26,11 +26,24 @@ import { UserIcon, QueueListIcon } from '@heroicons/vue/24/solid';
 import { PlusCircleIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '../stores/authStore.ts';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
+// import { onMounted, onUnmounted, ref } from 'vue';
 
 const authStore = useAuthStore();
 const { avatar } = storeToRefs(authStore);
 
 const retryStore = useRetryQueueStore();
 const { count } = storeToRefs(retryStore);
+
+// XXX An ugly interval instead of watch
+// const timer = ref();
+// onMounted(async () => {
+//   timer.value = setInterval(async () => {
+//     await retryStore.getItems();
+//   }, 1000)
+// });
+
+// onUnmounted(() => {
+//   clearInterval(timer.value);
+// });
 </script>
 
