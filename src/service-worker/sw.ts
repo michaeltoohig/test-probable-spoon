@@ -26,9 +26,6 @@ self.addEventListener('message', (event) => {
 });
 
 // self.__WB_MANIFEST is default injection point
-// self.__WB_MANIFEST.push({url: 'favicon.svg'});
-// self.__WB_MANIFEST.push({url: 'default-avatar.png'});
-console.log('precache', self.__WB_MANIFEST);
 precacheAndRoute(self.__WB_MANIFEST || []);
 
 // clean old assets

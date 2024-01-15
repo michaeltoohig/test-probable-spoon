@@ -2,7 +2,7 @@
 import { RouterLink } from 'vue-router';
 import SwapTheme from './SwapTheme.vue';
 import useOnlineStatus from '../composables/useOnlineStatus';
-import { ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
+import { ExclamationCircleIcon, ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
 import { useInstallPromptStore } from '../stores/installPromptStore';
 import { storeToRefs } from 'pinia';
 import { Bars3CenterLeftIcon as MenuIcon } from '@heroicons/vue/24/solid';
@@ -14,15 +14,19 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
 
 <template>
   <div :class="[isOnline ? 'navbar bg-primary text-primary-content' : 'navbar bg-error text-error-content']">
-    <div class="navbar-start"></div>
-    <div class="navbar-center">
-      <div v-if="!isOnline" class="tooltip tooltip-bottom" data-tip="You are Offline!">
+    <div class="navbar-start">
+      <div v-if="false" class="tooltip tooltip-bottom" data-tip="You are Offline!">
         <RouterLink to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
       </div>
       <RouterLink v-else to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
     </div>
+    <div class="navbar-center">
+      <div v-if="!isOnline" class="tooltip tooltip-bottom" data-tip="You Are Offline!">
+        <ExclamationCircleIcon class="w-7 h-7" />
+      </div>
+    </div>
     <div class="navbar-end">
-      <SwapTheme />
+      <SwapTheme class="me-1"/>
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost">
           <MenuIcon class="w-6 h-6" />

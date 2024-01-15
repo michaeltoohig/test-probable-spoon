@@ -3,7 +3,10 @@
     <div class="relative flex flex-col justify-center h-screen overflow-hidden">
       <div class="w-full p-6 m-auto bg-base-200 rounded-md shadow-md sm:max-w-lg">
         <form @submit="handleSubmit" class="space-y-4">
-          <h1 class="text-3xl font-semibold">Login</h1>
+          <div class="flex justify-start items-center">
+            <img :src="lorry" class="w-16 h-16" />
+            <h1 class="text-3xl font-semibold">Login</h1>
+          </div>
           <div class="form-control w-full max-w-lg">
             <label class="label">
               <span class="label-text">Email</span>
@@ -68,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import lorry from '/lorry.svg?url';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useForm } from '@vorms/core';
