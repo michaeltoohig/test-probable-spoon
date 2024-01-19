@@ -44,6 +44,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@rushstack/eslint-patch": "^1.2.0",
     "@tsconfig/node18": "^18.2.2",
+    "@types/jest": "^29.5.11",
     "@types/node": "^18.18.13",
     "@vite-pwa/assets-generator": "^0.2.3",
     "@vitejs/plugin-vue": "^4.4.0",
