@@ -10,6 +10,8 @@ export default function useLocations() {
       limit: -1,
       // @ts-ignore
       fields: ['id', 'name', 'area.id', 'area.name'],
+      // @ts-ignore
+      sort: 'name',
     })
     .then((resp: any) => {
       locations.value = resp.data;
