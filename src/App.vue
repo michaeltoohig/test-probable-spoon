@@ -16,6 +16,7 @@ const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
 
 const queueStore = useRetryQueueStore();
+queueStore.init();
 
 // setup app event listener for sw events
 useRetryQueueEventListener();
@@ -33,8 +34,6 @@ onBeforeMount(async () => {
       router.push({ name: 'login' });
     }
   }
-
-  await queueStore.init();
 });
 </script>
 
