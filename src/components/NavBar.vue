@@ -2,7 +2,7 @@
 import { RouterLink } from 'vue-router';
 import SwapTheme from './SwapTheme.vue';
 import useOnlineStatus from '../composables/useOnlineStatus';
-import { ExclamationCircleIcon, ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
+import { ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
 import { useInstallPromptStore } from '../stores/installPromptStore';
 import { storeToRefs } from 'pinia';
 import { Bars3CenterLeftIcon as MenuIcon } from '@heroicons/vue/24/solid';
@@ -13,7 +13,9 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
 </script>
 
 <template>
-  <div :class="[isOnline ? 'navbar bg-primary text-primary-content' : 'navbar bg-error text-error-content']">
+
+
+  <div :class="[true ? 'navbar bg-primary text-primary-content' : 'navbar bg-error text-error-content']">
     <div class="navbar-start">
       <div v-if="false" class="tooltip tooltip-bottom" data-tip="You are Offline!">
         <RouterLink to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
@@ -21,9 +23,6 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
       <RouterLink v-else to="/" class="btn btn-ghost text-xl">South Sea Cargo</RouterLink>
     </div>
     <div class="navbar-center">
-      <div v-if="!isOnline" class="tooltip tooltip-bottom" data-tip="You Are Offline!">
-        <ExclamationCircleIcon class="w-7 h-7" />
-      </div>
     </div>
     <div class="navbar-end">
       <SwapTheme class="me-1"/>

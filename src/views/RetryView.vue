@@ -10,17 +10,17 @@
 
       <div role="alert" class="alert shadow-lg">
         <HandThumbUpIcon v-if="count === 0" class="h-6 w-6"/>
-        <ArrowPathIcon v-else-if="isSyncPendingRequests" class="h-6 w-6"/>
+        <ArrowPathIcon v-else-if="isSyncing" class="h-6 w-6"/>
         <InformationCircleIcon v-else class="h-6 w-6"/>
         <div class="w-full">
           <span v-if="count === 0">All container movements are submitted.</span>
-          <span v-else-if="!isSyncPendingRequests">{{ count }} container movements have not been submitted.</span>
+          <span v-else-if="!isSyncing">{{ count }} container movements have not been submitted.</span>
           <div v-else>
             <span>Submitting container movements.</span>
             <progress class="progress w-full"></progress>
           </div>
         </div>
-        <button class="btn btn-sm btn-primary" :disabled="count === 0 || isSyncPendingRequests" @click="syncPendingRequests">Sync Now</button>
+        <button class="btn btn-sm btn-primary" :disabled="count === 0 || isSyncing" @click="syncPendingRequests">Sync Now</button>
       </div>
 
       <div class="divider"></div>
@@ -67,7 +67,7 @@
           <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">MC:</span> {{ selected?.data.movement_code.code }}</li>
         </ul>
         <div class="modal-action flex row justify-between">
-          <label for="delete_retry_modal" class="btn btn-error" @click="deletedSelected">
+          <label for="delete_retry_modal" class="btn btn-error" @click="deleteSelected">
             Delete
           </label>
           <label for="delete_retry_modal" class="btn">Close</label>
@@ -79,59 +79,46 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
 import useContainers from '../composables/useContainers';
 import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
-import { ArrowPathIcon, HandThumbUpIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
+import { ArrowPathIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { storeToRefs } from 'pinia';
-import { RETRY_MESSAGE_KEY } from '../constants';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import { deleteFromQueue } from '../service-worker/retry-queue';
 
-const retryStore = useRetryQueueStore();
 const notifyStore = useNotifyStore();
-const queueStore = useRetryQueueStore();
-const { count } = storeToRefs(queueStore);
+const retryStore = useRetryQueueStore();
+const { count, isSyncing } = storeToRefs(retryStore);
 
 const selected = ref<RetryItem>();
 const setSelected = (item: RetryItem) => {
   selected.value = item;
 };
-const deletedSelected = async () => {
+const deleteSelected = async () => {
   if (!selected.value) return;
   await deleteFromQueue(selected.value.id);
   notifyStore.notify('Container movement successfully removed from retry queue', NotificationType.Info);
   selected.value = undefined;
   await getRetryQueue();
 }
-const isSyncPendingRequests = ref(false);
+
 const syncPendingRequests = async () => {
-  console.log('[retry] Message replay queue')
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    const authToken = localStorage.getItem('auth_token');
-    if (!authToken) {
-      notifyStore.notify('Failed to retry queue.', NotificationType.Error);
-      return;
-    }
-    console.log('[retry] Got auth token')
-    navigator.serviceWorker.controller.postMessage({
-      type: RETRY_MESSAGE_KEY,
-      payload: {
-        authToken,
-      },
-    });
-    isSyncPendingRequests.value = true; // this could be a value in the store, no? yes, then when we send the message from sw it also stops the loading progress bar because we have actual knowledge the requests are complete.
-    // TODO remove; we now know how to send message from sw to client
-    setTimeout(async () => {
-      await getRetryQueue()
-      isSyncPendingRequests.value = false;
-    }, 2000);
-  }
+  console.log('[Retry] manually triggering retry queue');
+  await retryStore.syncRetryQueue();
 }
+
+watch(isSyncing, async (newValue: boolean) => {
+  if (!newValue) {
+    console.log('[Retry] Updating queue UI');
+    await getRetryQueue();
+  }
+});
 
 const { containers, promise: containerPromise } = useContainers();
 const { movementCodes, promise: movementCodesPromise } = useMovementCodes();

@@ -83,10 +83,15 @@ self.addEventListener('fetch', (event: FetchEvent) => {
       }
       return response;
     } catch (error) {
-      console.error('Failed to send data, adding to retry queue', error);
+      console.error('[SW] Failed to POST, adding to retry queue', error);
       const clonedrequest = event.request.clone();
       const payload = await clonedrequest.json();
-      await addToQueue(payload);
+      try {
+        await addToQueue(payload);
+      } catch (queueError) {
+        console.error('[Queue] Failed to save to queue', queueError);
+        throw queueError
+      }
       throw error;
     }
   };
@@ -103,33 +108,34 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 });
 
 const replayQueue = async (authToken: string) => {
-  console.log('Replay queue begin');
+  console.log('[Queue] Attempting retry queue');
   let successCount = 0;
   let failureCount = 0;
   const queue = await getQueue();
-  for (const item of queue) {
-    try {
-      console.log('retrying item', item);
-      // TODO use server host envvar
-      await fetch(`${DIRECTUS_URL}/items/Movements`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify(item.payload)
-      });
-      console.log('Success retry; will delete', item.id);
-      await deleteFromQueue(item.id);
-      successCount += 1;
-    } catch (error) {
-      // Request fails, leave it in the queue
-      console.error('Failed to replay item', error);
-      failureCount += 1;
+  try {
+    for (const item of queue) {
+      try {
+        console.log('retrying item', item);
+        await fetch(`${DIRECTUS_URL}/items/Movements`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(item.payload)
+        });
+        console.log('[Queue] Retry Success; will delete from queue', item.id);
+        await deleteFromQueue(item.id);
+        successCount += 1;
+      } catch (error) {
+        // Request fails, leave it in the queue
+        console.error('[Queue] Retry Failed', error);
+        failureCount += 1;
+      }
     }
+  } finally {
+    messageClientsRetryResults(successCount, failureCount);
   }
-  console.log('end replayQueue');
-  messageClientsRetryResults(successCount, failureCount);
 };
 
 const messageClientsRetryResults = (success: number = 0, failure: number = 0) => {

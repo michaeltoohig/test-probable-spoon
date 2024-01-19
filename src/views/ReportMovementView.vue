@@ -130,7 +130,6 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authStore';
 import { storeToRefs } from 'pinia';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
-// import type { Movement } from '../services/directus';
 import useContainers from '../composables/useContainers';
 import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
@@ -142,8 +141,6 @@ const notifyStore = useNotifyStore();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const { isOnline } = useOnlineStatus();
-
-// Setup initial select values
 
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -221,16 +218,13 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
   },
   async onSubmit(data: any) {
     // it appears isOnline is not respected as the service worker thinks it is online when testing.
-    if (!isOnline) {
-      console.log('you are offline; adding to queue')
-      await retryStore.addItem(data);
-      notifyStore.notify('Added to retry queue. Please retry when you are online again.', NotificationType.Info);
-      router.push({ name: 'retry' });
-    } else {
-      console.log('you are online; submitting')
+    if (isOnline) {
+      console.log('[Movement] Submitting online');
       try {
         await directus.items('Movements').createOne(data);
         notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
+        console.log('[Movement] Retrying queue post successsfull submit');
+        await retryStore.syncRetryQueue();
         router.push({ name: 'home' });
       } catch (err) {
         console.error(err);
@@ -239,6 +233,11 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       } finally {
         await retryStore.getItems();
       }
+    } else {
+      console.log('[Movement] Adding to retry queue offline');
+      await retryStore.addItem(data);
+      notifyStore.notify('The movement was added to retry queue.', NotificationType.Info);
+      router.push({ name: 'retry' });
     }
   },
 });

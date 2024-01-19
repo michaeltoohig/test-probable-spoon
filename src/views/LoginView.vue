@@ -2,6 +2,7 @@
   <div class="login">
     <div class="relative flex flex-col justify-center h-screen overflow-hidden">
       <div class="w-full p-6 m-auto bg-base-200 rounded-md shadow-md sm:max-w-lg">
+        <AlertNoServiceWorker />
         <form @submit="handleSubmit" class="space-y-4">
           <div class="flex justify-start items-center">
             <img :src="lorry" class="w-16 h-16" />
@@ -76,6 +77,7 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useForm } from '@vorms/core';
 import { EMAIL_REGEX, useAuthStore } from '../stores/authStore';
+import AlertNoServiceWorker from '../components/AlertNoServiceWorker.vue';
 
 const authStore = useAuthStore();
 const { error, loading } = storeToRefs(authStore);

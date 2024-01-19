@@ -46,6 +46,9 @@ export const useAuthStore = defineStore('auth', {
       if (this.user === null) return null;
       return `${this.user.first_name} ${this.user.last_name}`;
     },
+    authToken(): string | null {
+      return localStorage.getItem('auth_token');
+    },
   },
   actions: {
     resetErrors() {

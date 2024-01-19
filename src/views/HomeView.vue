@@ -3,11 +3,17 @@ import lorry from '/lorry.svg?url';
 import { useRouter } from 'vue-router';
 // @ts-ignore
 import containerMovementImgSrc from '../assets/container-movement.png?url';
+import { storeToRefs } from 'pinia';
+import { useInstallPromptStore } from '../stores/installPromptStore';
+import CardInstallApp from '../components/CardInstallApp.vue';
 
 const router = useRouter();
 const goToNewMovement = () => {
   router.push({ name: 'movements-new' });
 };
+
+const installPromptStore = useInstallPromptStore();
+const { installPromptAvailable } = storeToRefs(installPromptStore);
 </script>
 
 <template>
@@ -29,6 +35,8 @@ const goToNewMovement = () => {
       </div>
     </div>
 
+    <CardInstallApp class="max-w-md mb-3" v-if="installPromptAvailable" />
+    
     <div
       v-if="false"
       @click="goToNewMovement"

@@ -6,7 +6,7 @@ export default function useInstallPromptEventListeners() {
   const store = useInstallPromptStore();
   const { defferedPrompt } = storeToRefs(store);
   
-  const beforeInstallPromptHandler = (event) => {
+  const beforeInstallPromptHandler = (event: Event) => {
     event.preventDefault();
     defferedPrompt.value = event;
     console.log('[App] Install prompt event stashed');
