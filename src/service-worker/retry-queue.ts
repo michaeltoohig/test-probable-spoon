@@ -42,5 +42,7 @@ export const getQueue = async () => {
   const queue = await tx.store.getAll();
   // add logic for maxRetention if you want that here
   await tx.done;
-  return queue;
+  return queue.sort((a, b) => {
+    return a.date_reported > b.date_reported ? 1 : -1;
+  });
 };
