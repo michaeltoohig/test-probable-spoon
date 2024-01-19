@@ -73,6 +73,12 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  if (to.name === 'login') {
+    const authStore = useAuthStore();
+    if (authStore.isLoggedIn) {
+      next({ name: 'home' });
+    }
+  }
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     console.info('[router] beforeEach checking auth');
     const authStore = useAuthStore();
