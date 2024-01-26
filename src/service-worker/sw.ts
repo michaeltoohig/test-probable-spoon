@@ -8,6 +8,7 @@ import {
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
+// @ts-ignore
 import type { URL } from 'url';
 import { RETRY_MESSAGE_KEY } from '../constants';
 import { addToQueue, deleteFromQueue, getQueue } from './retry-queue';
@@ -46,7 +47,7 @@ registerRoute(
 // Cache API GET requests
 const matchDirectusApiCb = ({ url }: { url: URL }) => {
   return (
-    url.origin === 'http://localhost:8055' &&
+    url.origin === DIRECTUS_URL &&
     (url.pathname === '/items/Containers' ||
       url.pathname === '/items/Locations' ||
       url.pathname === '/items/MovementCodes' ||
