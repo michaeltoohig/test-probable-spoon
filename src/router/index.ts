@@ -10,6 +10,7 @@ import ProfileView from '@/views/ProfileView';
 import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
+import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -73,9 +74,11 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const { isOnline } = useOnlineStatus();  
+
   if (to.name === 'login') {
     const authStore = useAuthStore();
-    if (authStore.isLoggedIn) {
+    if (authStore.isLoggedIn && !isOnline.value) {
       next({ name: 'home' });
     }
   }

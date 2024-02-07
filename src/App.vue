@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import ReloadPrompt from './components/ReloadPrompt.vue';
 import Notifications from './components/Notifications.vue';
 import { onBeforeMount } from 'vue';
-import { useAuthStore } from './stores/authStore';
+import { storedUser, useAuthStore } from './stores/authStore';
 import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
@@ -25,7 +25,7 @@ useInstallPromptEventListeners();
 
 onBeforeMount(async () => {
   console.info('[App] Checking auth onBeforeMount');
-  if (isOnline && isLoggedIn.value) {
+  if (isOnline.value && isLoggedIn.value) {
     try {
       await authStore.getCurrentUser();
     } catch (err: any) {
@@ -33,6 +33,9 @@ onBeforeMount(async () => {
       authStore.error = 'Login Expired'; // TODO i18n
       router.push({ name: 'login' });
     }
+  } else if (storedUser.value) {
+    authStore.user = JSON.parse(storedUser.value)
+    authStore.getCurrentUser();
   }
 });
 </script>

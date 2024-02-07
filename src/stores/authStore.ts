@@ -31,7 +31,7 @@ export type LoginForm = {
 };
 
 
-const storedUser: Ref<string | null> = useStorage('user', null);
+export const storedUser: Ref<string | null> = useStorage('user', null);
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
@@ -111,6 +111,13 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 });
+
+// no active pinia yet
+// if (storedUser.value) {
+//   const authStore = useAuthStore();
+//   authStore.user = JSON.parse(storedUser.value) as UserType;
+//   authStore.getCurrentUser();
+// }
 
 // @ts-expect-errors
 if (import.meta.hot) {
