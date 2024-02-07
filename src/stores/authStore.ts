@@ -9,9 +9,9 @@ export const EMAIL_REGEX =
   // eslint-disable-next-line no-control-regex
   /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
 
-export type AuthStoreState = {
+interface AuthStoreState {
   last_page: string | null;
-  user: Ref<UserType | null>;
+  user: UserType | null;
   avatar: string | null;
   loading: boolean;
   error: any;
@@ -30,10 +30,13 @@ export type LoginForm = {
   password: string;
 };
 
+
+const storedUser: Ref<string | null> = useStorage('user', null);
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
     last_page: null,
-    user: useStorage('user', null),
+    user: null,
     avatar: null,
     loading: false,
     error: null,
@@ -61,12 +64,14 @@ export const useAuthStore = defineStore('auth', {
         await directus.auth.logout();
       } finally {
         this.user = null;
+        storedUser.value = null;
       }
     },
     async getCurrentUser() {
       try {
         const me = await directus.users.me.read();
-        this.user = me as UserType;  // does not save to local storage correctly
+        storedUser.value = JSON.stringify(me);
+        this.user = JSON.parse(storedUser.value) as UserType;
         if (this.user.avatar) {
           // @ts-expect-errors
           this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
