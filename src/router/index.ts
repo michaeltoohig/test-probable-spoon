@@ -10,7 +10,6 @@ import ProfileView from '@/views/ProfileView';
 import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
-import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,17 +46,17 @@ const router = createRouter({
           name: 'profile',
           component: ProfileView,
         },
-        {
-          path: '/about',
-          name: 'about',
-          component: AboutView,
-        },
-        {
-          path: '/theme-preview',
-          name: 'theme-preview',
-          // @ts-ignore
-          component: () => import('../views/ThemeView.vue'),
-        },
+        // {
+        //   path: '/about',
+        //   name: 'about',
+        //   component: AboutView,
+        // },
+        // {
+        //   path: '/theme-preview',
+        //   name: 'theme-preview',
+        //   // @ts-ignore
+        //   component: () => import('../views/ThemeView.vue'),
+        // },
         {
           path: '/movements/new',
           name: 'movements-new',
