@@ -74,18 +74,16 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const { isOnline } = useOnlineStatus();  
-
   if (to.name === 'login') {
     const authStore = useAuthStore();
-    if (authStore.isLoggedIn && !isOnline.value) {
+    if (authStore.isLoggedIn) {
       next({ name: 'home' });
     }
   }
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     console.info('[router] beforeEach checking auth');
     const authStore = useAuthStore();
-    if (!authStore.isLoggedIn) {
+    if (!authStore.user) {
       next({ name: 'login' });
     }
   }

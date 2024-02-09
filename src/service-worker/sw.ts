@@ -62,6 +62,18 @@ registerRoute(
       new CacheableResponsePlugin({
         statuses: [0, 200],
       }),
+      {
+        cacheWillUpdate: async ({ request, response }) => {
+          if (response && response.status === 403) {
+            const cache = await caches.open('api');
+            const cachedResponse = await cache.match(request);
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+          }
+          return response;
+        },
+      },
     ],
   })
 );

@@ -7,8 +7,7 @@
     </div>
 
     <div class="col-auto">
-
-      <div role="alert" class="alert shadow-lg">
+      <div v-if="isLoggedIn" role="alert" class="alert shadow-lg">
         <HandThumbUpIcon v-if="count === 0" class="h-6 w-6"/>
         <ArrowPathIcon v-else-if="isSyncing" class="h-6 w-6"/>
         <InformationCircleIcon v-else class="h-6 w-6"/>
@@ -21,6 +20,13 @@
           </div>
         </div>
         <button class="btn btn-sm btn-primary" :disabled="count === 0 || isSyncing" @click="syncPendingRequests">Sync Now</button>
+      </div>
+      <div v-else role="alert" class="alert shadow-lg">
+        <InformationCircleIcon class="h-6 w-6"/>
+        <div class="w-full">
+          <span>You must login again. Then, you can submit these container movements.</span>
+        </div>
+        <router-link :to="{ name: 'login' }" class="btn btn-sm btn-warning">Login</router-link>
       </div>
 
       <div class="divider"></div>
@@ -91,7 +97,10 @@ import { storeToRefs } from 'pinia';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import { deleteFromQueue } from '../service-worker/retry-queue';
+import { useAuthStore } from '../stores/authStore';
 
+const authStore = useAuthStore()
+const { isLoggedIn } = storeToRefs(authStore);
 const notifyStore = useNotifyStore();
 const retryStore = useRetryQueueStore();
 const { count, isSyncing } = storeToRefs(retryStore);

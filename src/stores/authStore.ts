@@ -11,13 +11,13 @@ export const EMAIL_REGEX =
 
 interface AuthStoreState {
   last_page: string | null;
-  user: UserType | null;
-  avatar: string | null;
+  // user: UserType | null;
+  // avatar: string | null;
   loading: boolean;
   error: any;
 };
 
-export type UserType = {
+interface UserType {
   id: string;
   email: string;
   first_name: string;
@@ -25,32 +25,43 @@ export type UserType = {
   avatar: string | null;
 };
 
-export type LoginForm = {
+export interface CredentialsType {
   email: string;
   password: string;
+  remember: boolean;
 };
 
-
 export const storedUser: Ref<string | null> = useStorage('user', null);
+
+const authToken: Ref<string | null> = useStorage('auth_token', null);
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
     last_page: null,
-    user: null,
-    avatar: null,
+    // user: null,
+    // avatar: null,
     loading: false,
     error: null,
   }),
   getters: {
-    isLoggedIn(): boolean {
-      return this.user !== null;
+    user(): UserType | null {
+      if (!storedUser.value) return null;
+      return storedUser.value ? JSON.parse(storedUser.value) as UserType : null;
     },
     fullName(): string | null {
       if (this.user === null) return null;
       return `${this.user.first_name} ${this.user.last_name}`;
     },
+    avatar(): string | null {
+      if (!this.user) return null;
+      return this.user.avatar ? `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}` : defaultAvatar;
+    },
     authToken(): string | null {
-      return localStorage.getItem('auth_token');
+      return authToken.value;
+    },
+    isLoggedIn(): boolean {
+      // fails to update due to 'auth_token' not watched for changes  
+      return authToken.value !== null;
     },
   },
   actions: {
@@ -63,31 +74,49 @@ export const useAuthStore = defineStore('auth', {
       try {
         await directus.auth.logout();
       } finally {
-        this.user = null;
+        // this.user = null;
+        authToken.value = null;
         storedUser.value = null;
       }
     },
-    async getCurrentUser() {
+    // async getCurrentUser() {
+    //   try {
+    //     const me = await directus.users.me.read();
+    //     storedUser.value = JSON.stringify(me);
+    //     this.user = JSON.parse(storedUser.value) as UserType;
+    //     if (this.user.avatar) {
+    //       // @ts-expect-errors
+    //       this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
+    //     } else {
+    //       this.avatar = defaultAvatar;
+    //     }
+    //   } catch (err) {
+    //     console.error('Get Current User Failed', err);
+    //     throw err;
+    //   }
+    // },
+    async getMe() {
       try {
-        const me = await directus.users.me.read();
-        storedUser.value = JSON.stringify(me);
-        this.user = JSON.parse(storedUser.value) as UserType;
-        if (this.user.avatar) {
-          // @ts-expect-errors
-          this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
-        } else {
-          this.avatar = defaultAvatar;
-        }
+        const me = await directus.users.me.read() as any;
+        const user: UserType = {
+          id: me.id,
+          first_name: me.first_name,
+          last_name: me.last_name,
+          email: me.email,
+          avatar: me.avatar,
+        };
+        storedUser.value = JSON.stringify(user);
       } catch (err) {
-        console.error('Get Current User Failed', err);
+        console.log('[AUTH] error fetching me', err);
         throw err;
       }
     },
-    async login(credentials: LoginForm) {
+    async login(credentials: CredentialsType) {
       try {
         this.loading = true;
         await directus.auth.login({ ...credentials });
-        await this.getCurrentUser();
+        // await this.getCurrentUser();
+        await this.getMe();
         return;
         // if (this.last_page) {
         //   // this.router.push(this.last_page);

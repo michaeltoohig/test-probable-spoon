@@ -10,7 +10,6 @@ import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
 import useRetryQueueEventListener from './composables/useRetryQueueEventListener.ts';
 import useInstallPromptEventListeners from './composables/useInstallPromptEventListeners.ts';
-const { isOnline } = useOnlineStatus();
 
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
@@ -23,20 +22,32 @@ useRetryQueueEventListener();
 // setup event listeners for sw install prompt
 useInstallPromptEventListeners();
 
+// const { isOnline } = useOnlineStatus();
+
 onBeforeMount(async () => {
   console.info('[App] Checking auth onBeforeMount');
-  if (isOnline.value && isLoggedIn.value) {
+  if (storedUser.value) {
+    // previous login exists
     try {
-      await authStore.getCurrentUser();
-    } catch (err: any) {
-      await authStore.logout();
-      authStore.error = 'Login Expired'; // TODO i18n
-      router.push({ name: 'login' });
+      // update user
+      await authStore.getMe();
+    } catch (err) {
+      console.log('[App] failed to get user', err);
     }
-  } else if (storedUser.value) {
-    authStore.user = JSON.parse(storedUser.value)
-    authStore.getCurrentUser();
+  } else {
+    // none exists
   }
+  
+  
+  // if (isOnline && isLoggedIn.value) {
+  //   try {
+  //     await authStore.getMe();
+  //   } catch (err: any) {
+  //     await authStore.logout();
+  //     authStore.error = 'Login Expired'; // TODO i18n
+  //     router.push({ name: 'login' });
+  //   }
+  // }
 });
 </script>
 
