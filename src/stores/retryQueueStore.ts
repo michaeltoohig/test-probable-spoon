@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { addToQueue, deleteFromQueue, getQueue, initQueue } from '../service-worker/retry-queue';
 import type { Movement } from '../services/directus';
 import { useAuthStore } from './authStore';

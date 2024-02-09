@@ -60,6 +60,7 @@ export const useAuthStore = defineStore('auth', {
       return authToken.value;
     },
     isLoggedIn(): boolean {
+      // perhaps a composable to watch the value of the `authToken` ref and keep this logic outside of the store
       // fails to update due to 'auth_token' not watched for changes  
       return authToken.value !== null;
     },

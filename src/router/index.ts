@@ -7,7 +7,7 @@ import BaseLayout from '@/views/BaseLayout.vue';
 import HomeView from '@/views/HomeView';
 import RetryView from '@/views/RetryView';
 import ProfileView from '@/views/ProfileView';
-import AboutView from '@/views/AboutView';
+// import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
 

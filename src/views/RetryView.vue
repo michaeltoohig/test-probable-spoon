@@ -32,7 +32,7 @@
       <div class="divider"></div>
 
       <div v-if="count > 0" class="overflow-x-auto">
-        <table class="table">
+        <table class="hidden md:table">
           <!-- head -->
           <thead>
             <tr>
@@ -59,7 +59,32 @@
             </tr>
           </tbody>
         </table>
+        <ul class="timeline timeline-vertical md:hidden">
+          <li v-for="retry in retries" :key="retry.id">
+            <hr />
+            <div class="timeline-start timeline-box shadow">
+              <div class="flex justify-between items-center">
+                <div class="badge badge-neutral">{{ retry.data.movement_code.code }}</div>
+                <label for="delete_retry_modal" @click="setSelected(retry)" class="btn btn-error btn-outline btn-xs">
+                  <TrashIcon class="h-4 w-4" />
+                </label>
+              </div>
+
+              <div class="card-title">{{ retry.data.container.code }}</div>
+              <div class="card-title">{{ retry.data.location.name }}</div>
+              <div class="card-subtitle">{{ retry.data.location.area.name }}</div>
+            </div>
+            <div class="timeline-middle">
+              <CheckCircleIcon class="w-5 h-5" />
+            </div>
+            <div class="timeline-end">
+              {{ printDate(retry.data.date_reported) }}
+            </div>
+            <hr />
+          </li>
+        </ul>
       </div>
+
     </div>
 
     <input type="checkbox" id="delete_retry_modal" class="modal-toggle" />
@@ -91,7 +116,7 @@ import { useRetryQueueStore } from '../stores/retryQueueStore';
 import useContainers from '../composables/useContainers';
 import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
-import { ArrowPathIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid';
+import { ArrowPathIcon, CheckCircleIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { storeToRefs } from 'pinia';
 import { NotificationType, useNotifyStore } from '../stores/notifyStore';
