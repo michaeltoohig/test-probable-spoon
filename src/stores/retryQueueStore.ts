@@ -49,7 +49,7 @@ export const useRetryQueueStore = defineStore('queue', {
       const authToken = authStore.authToken;
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         if (!authToken) {
-          notifyStore.notify('Failed to retry queue; missing auth token.', NotificationType.Error);
+          notifyStore.notify('Failed to retry queue; you are not logged in.', NotificationType.Error);
           return;
         }
         navigator.serviceWorker.controller.postMessage({

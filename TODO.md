@@ -20,5 +20,28 @@
 - [x] add "No Service Worker" warning banner
 - [x] fix 'ready for offline' banner; explain ready for offline queue etc.
 - [x] reorder retry queue UI
-- [ ] fix deployment with correct service worker
+- [x] fix deployment with correct service worker
 - [ ] send notification to user https://whatpwacando.today/notifications
+
+## 2024-02-07
+
+- [x] Allow create movements while logged out and offline
+
+In some scenarios, uers accessing the app while offline will be hit with the login screen unable to record movements.
+The user should be able to make movements but they are stored in the queue until authenticated again.
+
+ - [x] store user details in localStorage in JSON format
+ - Need to rework beforeEach router logic
+   - perhaps require prior login in localStorage to continue?
+ - Fetching items in database will fail without a cache containing valid items
+   - is login required at all then? users can not fetch data without login anyways.
+ - [x] handle 401 errors to inform the user needs to login again to successfully submit the movement
+
+- [x] refactor authStore
+
+The use of `storeUser` and `user` and `avatar` seems a bit much.
+More use of getters seems appropriate.
+
+## 2024-02-09
+
+- [ ] watch authToken for changes

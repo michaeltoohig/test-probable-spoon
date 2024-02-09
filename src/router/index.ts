@@ -10,6 +10,7 @@ import ProfileView from '@/views/ProfileView';
 import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
+import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,7 +83,7 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     console.info('[router] beforeEach checking auth');
     const authStore = useAuthStore();
-    if (!authStore.isLoggedIn) {
+    if (!authStore.user) {
       next({ name: 'login' });
     }
   }

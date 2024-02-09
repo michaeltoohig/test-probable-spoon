@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
 import SwapTheme from './SwapTheme.vue';
-import useOnlineStatus from '../composables/useOnlineStatus';
-import { ArrowLeftStartOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
+import { ArrowLeftStartOnRectangleIcon, ArrowRightEndOnRectangleIcon, SparklesIcon } from '@heroicons/vue/24/solid';
 import { useInstallPromptStore } from '../stores/installPromptStore';
 import { storeToRefs } from 'pinia';
 import { Bars3CenterLeftIcon as MenuIcon } from '@heroicons/vue/24/solid';
+import { useAuthStore } from '../stores/authStore';
 
-const { isOnline } = useOnlineStatus();
 const installPromptStore = useInstallPromptStore();
 const { installPromptAvailable } = storeToRefs(installPromptStore);
+
+const authStore = useAuthStore();
+const { isLoggedIn } = storeToRefs(authStore);
 </script>
 
 <template>
-
-
   <div :class="[true ? 'navbar bg-primary text-primary-content' : 'navbar bg-error text-error-content']">
     <div class="navbar-start">
       <div v-if="false" class="tooltip tooltip-bottom" data-tip="You are Offline!">
@@ -43,9 +43,13 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
           </li>
           <div v-if="installPromptAvailable" class="divider my-0 px-3"></div>
           <li>
-            <RouterLink :to="{ name: 'logout' }">
+            <RouterLink v-if="isLoggedIn" :to="{ name: 'logout' }">
               <ArrowLeftStartOnRectangleIcon class="w-5 h-5" />
               Logout
+            </RouterLink>
+            <RouterLink v-else :to="{ name: 'login' }">
+              <ArrowRightEndOnRectangleIcon class="w-5 h-5" />
+              Login
             </RouterLink>
           </li>
         </ul>
