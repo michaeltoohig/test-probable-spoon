@@ -33,7 +33,7 @@ export interface CredentialsType {
 
 export const storedUser: Ref<string | null> = useStorage('user', null);
 
-const authToken: Ref<string | null> = useStorage('auth_token', null);
+export const authToken: Ref<string | null> = useStorage('auth_token', null);
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
@@ -46,7 +46,13 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     user(): UserType | null {
       if (!storedUser.value) return null;
-      return storedUser.value ? JSON.parse(storedUser.value) as UserType : null;
+      try {
+        return storedUser.value ? JSON.parse(storedUser.value) as UserType : null;
+      } catch {
+        console.log('[Auth] failed to parse user')
+        storedUser.value = null;
+        return null;
+      }
     },
     fullName(): string | null {
       if (this.user === null) return null;
@@ -60,9 +66,7 @@ export const useAuthStore = defineStore('auth', {
       return authToken.value;
     },
     isLoggedIn(): boolean {
-      // perhaps a composable to watch the value of the `authToken` ref and keep this logic outside of the store
-      // fails to update due to 'auth_token' not watched for changes  
-      return authToken.value !== null;
+      return authToken.value !== null && this.user !== null;
     },
   },
   actions: {
@@ -141,13 +145,6 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 });
-
-// no active pinia yet
-// if (storedUser.value) {
-//   const authStore = useAuthStore();
-//   authStore.user = JSON.parse(storedUser.value) as UserType;
-//   authStore.getCurrentUser();
-// }
 
 // @ts-expect-errors
 if (import.meta.hot) {

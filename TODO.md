@@ -44,10 +44,10 @@ More use of getters seems appropriate.
 
 ## 2024-02-09
 
-- [ ] watch authToken for changes
+- [x] watch authToken for changes
 
 - [x] filter movement codes based on location type
-- [ ] translations
+- [-] translations (not required)
 
-- [ ] error from existing `[object Object]` in local storage
-- [ ] error of infinite loop in router logic when no user but valid auth token
+- [x] error from existing `[object Object]` in local storage
+- [x] error of infinite loop in router logic when no user but valid auth token

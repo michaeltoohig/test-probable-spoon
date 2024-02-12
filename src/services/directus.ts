@@ -1,5 +1,6 @@
 // import { authentication, createDirectus, rest, readItem, readItems  } from "@directus/sdk";
-import { Directus, ID } from '@directus/sdk';
+import { BaseStorage, Directus, ID } from '@directus/sdk';
+import { authToken } from '../stores/authStore';
 
 export interface Container {
   id: ID;
@@ -43,8 +44,26 @@ interface Schema {
   Movements: Movement[];
 }
 
+// NOTE: Adds reactivity to `authToken` in our app by explicitly accessing it.
+class CustomStorage extends BaseStorage {
+  get(key: string) {
+    if (key === 'auth_token') return authToken.value;
+    return localStorage.getItem(key);
+  }
+  set(key: string, value: string) {
+    if (key === 'auth_token') return authToken.value = value;
+    return localStorage.setItem(key, value);
+  }
+  delete(key: string) {
+    if (key === 'auth_token') return authToken.value = null;
+    return localStorage.removeItem(key);
+  }
+}
+
 // const directus = createDirectus<Schema>(import.meta.env.VITE_DIRECTUS_URL).with(rest()).with(authentication());
 // @ts-expect-error
-const directus = new Directus<Schema>(import.meta.env.VITE_DIRECTUS_URL);
+const directus = new Directus<Schema>(import.meta.env.VITE_DIRECTUS_URL, {
+  storage: new CustomStorage(),
+});
 
 export { directus };
