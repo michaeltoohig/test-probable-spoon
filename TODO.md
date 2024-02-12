@@ -48,3 +48,6 @@ More use of getters seems appropriate.
 
 - [x] filter movement codes based on location type
 - [ ] translations
+
+- [ ] error from existing `[object Object]` in local storage
+- [ ] error of infinite loop in router logic when no user but valid auth token
