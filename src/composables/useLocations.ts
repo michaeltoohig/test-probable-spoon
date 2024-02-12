@@ -9,7 +9,7 @@ export default function useLocations() {
     .readByQuery({
       limit: -1,
       // @ts-ignore
-      fields: ['id', 'name', 'area.id', 'area.name'],
+      fields: ['id', 'name', 'area.id', 'area.name', 'type'],
       // @ts-ignore
       sort: 'name',
     })

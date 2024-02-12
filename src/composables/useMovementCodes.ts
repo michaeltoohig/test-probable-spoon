@@ -9,7 +9,7 @@ export default function useMovementCode() {
     .readByQuery({
       limit: -1,
       // @ts-ignore
-      fields: ['id', 'code'],
+      fields: ['id', 'code', 'name'],
     })
     .then((resp: any) => {
       movementCodes.value = resp.data;

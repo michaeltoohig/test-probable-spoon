@@ -63,13 +63,21 @@
         <select
           v-model="movementCode"
           v-bind="movementCodeAttrs"
+          :disabled="!location"
           class="select select-primary w-full max-w-lg"
         >
           <option disabled selected>Select a movement code!</option>
-          <option v-for="mc in movementCodes" :key="mc.id" :value="mc.id">{{ mc.code }}</option>
+          <option v-for="mc in filteredMovementCodes" :key="mc.id" :value="mc.id">{{ mc.name }}</option>
         </select>
         <label v-if="'movement_code' in errors" class="label">
           <span class="label-text-alt text-red-500">{{ errors.movement_code }}</span>
+        </label>
+      </div>
+
+      <div class="form-control w-full max-w-lg col-span-2">
+        <label class="label cursor-pointer">
+          <span class="label-text">Filter Movement Codes</span> 
+          <input type="checkbox" v-model="showFilteredMovementCodes" class="checkbox" />
         </label>
       </div>
 
@@ -305,6 +313,27 @@ const setSelectedDate = (day: string) => {
     date.value = formatISO(sub(new Date(), { days: 1 }), { representation: 'date' });
   }
 };
+
+const selectedLocationType = computed(() => {
+  if (!location.value) return;
+  return locations.value.find((l) => l.id === location.value)?.type;
+});
+const showFilteredMovementCodes = ref(true);
+const filteredMovementCodes = computed(() => {
+  if (!selectedLocationType.value) return;
+  if (!showFilteredMovementCodes.value) return movementCodes.value;
+  if (selectedLocationType.value == 'customer') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('D'));
+  } else if (selectedLocationType.value == 'container-yard') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('T'));
+  } else if (selectedLocationType.value == 'workshop') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('SNTR'));
+  } else if (selectedLocationType.value == 'port') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('L') || mc.code.startsWith('T'));
+  } else {
+    return movementCodes.value;
+  }
+});
 </script>
 
 <style scoped lang="scss">

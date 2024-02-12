@@ -15,6 +15,7 @@ export interface Area {
 export interface Location {
   id: ID;
   name: string;
+  type: string;
   area: Area;
 }
 

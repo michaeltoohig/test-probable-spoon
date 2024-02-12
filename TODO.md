@@ -45,3 +45,6 @@ More use of getters seems appropriate.
 ## 2024-02-09
 
 - [ ] watch authToken for changes
+
+- [x] filter movement codes based on location type
+- [ ] translations
