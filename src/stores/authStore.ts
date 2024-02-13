@@ -38,8 +38,6 @@ export const authToken: Ref<string | null> = useStorage('auth_token', null);
 export const useAuthStore = defineStore('auth', {
   state: (): AuthStoreState => ({
     last_page: null,
-    // user: null,
-    // avatar: null,
     loading: false,
     error: null,
   }),
@@ -75,31 +73,6 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       this.loading = false;
     },
-    async logout() {
-      try {
-        await directus.auth.logout();
-      } finally {
-        // this.user = null;
-        authToken.value = null;
-        storedUser.value = null;
-      }
-    },
-    // async getCurrentUser() {
-    //   try {
-    //     const me = await directus.users.me.read();
-    //     storedUser.value = JSON.stringify(me);
-    //     this.user = JSON.parse(storedUser.value) as UserType;
-    //     if (this.user.avatar) {
-    //       // @ts-expect-errors
-    //       this.avatar = `${import.meta.env.VITE_DIRECTUS_URL}/assets/${this.user.avatar}`;
-    //     } else {
-    //       this.avatar = defaultAvatar;
-    //     }
-    //   } catch (err) {
-    //     console.error('Get Current User Failed', err);
-    //     throw err;
-    //   }
-    // },
     async getMe() {
       try {
         const me = await directus.users.me.read() as any;
@@ -112,7 +85,7 @@ export const useAuthStore = defineStore('auth', {
         };
         storedUser.value = JSON.stringify(user);
       } catch (err) {
-        console.log('[AUTH] error fetching me', err);
+        console.log('[Auth] error fetching me', err);
         throw err;
       }
     },
@@ -120,7 +93,6 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.loading = true;
         await directus.auth.login({ ...credentials });
-        // await this.getCurrentUser();
         await this.getMe();
         return;
         // if (this.last_page) {
@@ -135,12 +107,20 @@ export const useAuthStore = defineStore('auth', {
         if (error == 'INVALID_CREDENTIALS' || error == 'Error: Invalid user credentials.') {
           this.error = 'INVALID_CREDENTIALS'; // TODO i18n
         } else {
-          console.error('Unhandled error', err);
+          console.error('[Auth] Unhandled login error', err);
           this.error = err;
         }
         throw err;
       } finally {
         this.loading = false;
+      }
+    },
+    async logout() {
+      try {
+        await directus.auth.logout();
+      } finally {
+        authToken.value = null;
+        storedUser.value = null;
       }
     },
   },

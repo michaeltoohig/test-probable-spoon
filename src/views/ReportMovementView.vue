@@ -329,7 +329,13 @@ const filteredMovementCodes = computed(() => {
   } else if (selectedLocationType.value == 'workshop') {
     return movementCodes.value.filter((mc) => mc.code.startsWith('SNTR'));
   } else if (selectedLocationType.value == 'port') {
-    return movementCodes.value.filter((mc) => mc.code.startsWith('L') || mc.code.startsWith('T'));
+    const loadCodes = movementCodes.value
+      .filter((mc) => mc.code.startsWith('L'))
+      .map((mc) => ({ ...mc, name: `${mc.name} - On Barge` }));
+    const transferCodes = movementCodes.value
+      .filter((mc) => mc.code.startsWith('T'))
+      .map((mc) => ({ ...mc, name: `${mc.name} - On Land` }));
+    return [...loadCodes, ...transferCodes];
   } else {
     return movementCodes.value;
   }
