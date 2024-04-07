@@ -1,132 +1,53 @@
 # TODO
 
-## MISC
+## Caching
 
-- [ ] handle missing IDBDatabase (retry queue database) at app start up or gracefully ignore error
+- cache static images
+- cache dynamic images
+- precache API endpoints
 
-## Retry Queue
+## Typescript
 
-Why don't we just rebuild the request and have a custom queue and give up on this bullshit Queue thing?
+- learn this convoluted tsconfig thing and extension files like tsconfig.node tsconfig.vitest
 
-https://stackoverflow.com/questions/60117924/workbox-background-sync-doesnt-run-if-setting-onsync-callback
+## 2024-01-19
 
-- [ ] UI
+- [x] sort out use of bgSyncPlugin or custom implementation (only 1 hour charge)
+- [x] retry queue when new movements are submitted
 
-  - [ ] badge with watch to changes
-  - [x] count
-  - [ ] notify added to queue instead of failed request
+- [x] redirect home instead of login view if logged in
+- [x] fix position of notifications
+- [x] add "No Service Worker" warning banner
+- [x] fix 'ready for offline' banner; explain ready for offline queue etc.
+- [x] reorder retry queue UI
+- [x] fix deployment with correct service worker
+- [ ] send notification to user https://whatpwacando.today/notifications
 
-- [ ] delete request
-- [ ] retry one request
+## 2024-02-07
 
-### Retry Answer To Consider
+- [x] Allow create movements while logged out and offline
 
-To achieve the functionality you've described, we'll need to implement several pieces of logic within the service worker. We'll use Workbox's Queue class to manage the background sync queue and TypeScript for type safety. Below is the code with the necessary additions and modifications:
+In some scenarios, uers accessing the app while offline will be hit with the login screen unable to record movements.
+The user should be able to make movements but they are stored in the queue until authenticated again.
 
-```typescript
-import { Queue } from 'workbox-background-sync';
+ - [x] store user details in localStorage in JSON format
+ - Need to rework beforeEach router logic
+   - perhaps require prior login in localStorage to continue?
+ - Fetching items in database will fail without a cache containing valid items
+   - is login required at all then? users can not fetch data without login anyways.
+ - [x] handle 401 errors to inform the user needs to login again to successfully submit the movement
 
-interface StoredRequest {
-  url: string;
-  headers: HeadersInit;
-  body: any;
-  method: string;
-}
+- [x] refactor authStore
 
-// Define a type for the message event data
-interface MessageEventData {
-  command: string;
-}
+The use of `storeUser` and `user` and `avatar` seems a bit much.
+More use of getters seems appropriate.
 
-self.addEventListener('message', async (event: ExtendableMessageEvent) => {
-  console.log('Received message', event.data);
-  const eventData = event.data as MessageEventData;
-  if (eventData.command === 'SYNC') {
-    await replayBgSyncQueue();
-  }
-});
+## 2024-02-09
 
-const replayBgSyncQueue = async () => {
-  const queue = retryQueue as Queue<StoredRequest>;
-  let entry;
-  while ((entry = await queue.shiftRequest())) {
-    try {
-      await fetch(entry.request);
-      console.log(`Request for ${entry.request.url} has been replayed successfully`);
-    } catch (error) {
-      console.error(
-        `Request for ${entry.request.url} failed to replay, putting it back in the queue`,
-        error
-      );
-      await queue.unshiftRequest(entry);
-    }
-  }
-};
+- [x] watch authToken for changes
 
-const refreshToken = async (): Promise<string | null> => {
-  // TODO: Implement token refresh logic here
-  // This is a placeholder for the actual token refresh logic
-  return Promise.resolve('new_token');
-};
+- [x] filter movement codes based on location type
+- [-] translations (not required)
 
-// Setup retry queue for POST requests
-const retryQueue = new Queue<StoredRequest>('retry-queue', {
-  maxRetentionTime: 3 * 24 * 60, // 3 days in minutes
-  onSync: async ({ queue }) => {
-    let entry;
-    while ((entry = await queue.shiftRequest())) {
-      try {
-        const response = await fetch(entry.request.clone());
-        if (!response.ok) {
-          throw new Error('Failed to replay request');
-        }
-        if (response.status === 401) {
-          const newToken = await refreshToken();
-          if (newToken) {
-            const newHeaders = new Headers(entry.request.headers);
-            newHeaders.set('Authorization', `Bearer ${newToken}`);
-            const newRequest = new Request(entry.request.url, {
-              method: entry.request.method,
-              headers: newHeaders,
-              body: entry.request.body,
-              mode: 'same-origin', // Adjust if needed
-            });
-            await fetch(newRequest);
-          } else {
-            throw new Error('Failed to refresh token');
-          }
-        }
-      } catch (error) {
-        console.error(`Failed to replay request: ${entry.request.url}`, error);
-        await queue.unshiftRequest(entry);
-      }
-    }
-  },
-});
-
-self.addEventListener('fetch', (event: FetchEvent) => {
-  if (event.request.method !== 'POST' || !event.request.url.includes('/items/Movements')) {
-    return;
-  }
-
-  const handlePostRequest = async (event: FetchEvent) => {
-    try {
-      const response = await fetch(event.request.clone());
-      if (!response.ok) {
-        throw new Error('Server response was not ok');
-      }
-      return response;
-    } catch (error) {
-      console.error('Failed to send data, adding to retryQueue', error);
-      await retryQueue.pushRequest({ request: event.request.clone() });
-      return new Response('', { status: 503 });
-    }
-  };
-
-  event.respondWith(handlePostRequest(event));
-});
-```
-
-Please note that the `refreshToken` function is a placeholder and should be implemented with the actual logic to obtain a new token. The `onSync` callback in the `Queue` options is used to handle the retry logic when the background sync event occurs. The `fetch` event listener intercepts POST requests to '/items/Movements' and uses the `handlePostRequest` function to manage the request and potential retries.
-
-This code assumes that the service worker has access to the necessary APIs to manage authentication tokens, which may not be the case in a real-world scenario. Typically, service workers do not have direct access to `localStorage` and would need to communicate with the client pages to manage authentication tokens. If this is the case, you would need to implement a message-passing mechanism between the service worker and the client pages to handle token refreshes.
+- [x] error from existing `[object Object]` in local storage
+- [x] error of infinite loop in router logic when no user but valid auth token

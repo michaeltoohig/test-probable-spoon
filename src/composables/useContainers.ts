@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { directus } from '../services/directus';
 import type { Container } from '../services/directus';
 

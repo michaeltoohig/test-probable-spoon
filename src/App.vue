@@ -4,39 +4,52 @@ import { storeToRefs } from 'pinia';
 import ReloadPrompt from './components/ReloadPrompt.vue';
 import Notifications from './components/Notifications.vue';
 import { onBeforeMount } from 'vue';
-import { useAuthStore } from './stores/authStore';
+import { storedUser, useAuthStore } from './stores/authStore';
 import useOnlineStatus from './composables/useOnlineStatus';
 import router from './router';
 import { useRetryQueueStore } from './stores/retryQueueStore';
-import { useNotifyStore, NotificationType } from './stores/notifyStore.ts';
 import useRetryQueueEventListener from './composables/useRetryQueueEventListener.ts';
-const { isOnline } = useOnlineStatus();
+import useInstallPromptEventListeners from './composables/useInstallPromptEventListeners.ts';
 
 const authStore = useAuthStore();
 const { isLoggedIn } = storeToRefs(authStore);
 
-const notifyStore = useNotifyStore();
 const queueStore = useRetryQueueStore();
+queueStore.init();
 
-// setup app side event listener for sw events
+// setup app event listener for sw events
 useRetryQueueEventListener();
+// setup event listeners for sw install prompt
+useInstallPromptEventListeners();
+
+// const { isOnline } = useOnlineStatus();
 
 onBeforeMount(async () => {
   console.log('TODO [App] Checking preferred color theme');
 
   console.info('[App] Checking auth onBeforeMount');
-  if (isOnline && isLoggedIn.value) {
+  if (storedUser.value) {
+    // previous login exists
     try {
-      await authStore.getCurrentUser();
-    } catch (err: any) {
-      await authStore.logout();
-      authStore.error = 'Login Expired'; // TODO i18n
-      router.push({ name: 'login' });
+      // update user
+      await authStore.getMe();
+    } catch (err) {
+      console.log('[App] failed to get user', err);
     }
+  } else {
+    // none exists
   }
-
-  console.log('[App] Checking retry queue');
-  await queueStore.getRequests();
+  
+  // XXX old logic for reference until confirm new auth flow working
+  // if (isOnline && isLoggedIn.value) {
+  //   try {
+  //     await authStore.getMe();
+  //   } catch (err: any) {
+  //     await authStore.logout();
+  //     authStore.error = 'Login Expired'; // TODO i18n
+  //     router.push({ name: 'login' });
+  //   }
+  // }
 });
 </script>
 

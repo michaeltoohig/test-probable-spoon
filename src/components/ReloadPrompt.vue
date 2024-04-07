@@ -1,19 +1,23 @@
 <script setup lang="ts">
+// @ts-ignore
 import { useRegisterSW } from 'virtual:pwa-register/vue';
-import { pwaInfo } from 'virtual:pwa-info';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { HandThumbUpIcon } from '@heroicons/vue/24/solid';
 
-// eslint-disable-next-line no-console
-// console.log('pwaInfo', pwaInfo);
+interface OnRegisteredSWParams {
+ swUrl: string;
+ r: ServiceWorkerRegistration | null;
+}
 
 // replaced dyanmicaly
 const reloadSW: any = '__RELOAD_SW__';
 
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
   immediate: true,
-  onRegisterError(error) {
+  onRegisterError(error: Error) {
     console.log('sw err', error);
   },
-  onRegisteredSW(swUrl, r) {
+  onRegisteredSW({ swUrl, r }: OnRegisteredSWParams) {
     // eslint-disable-next-line no-console
     console.log(`Service Worker at: ${swUrl}`, reloadSW);
     if (reloadSW === 'true') {
@@ -37,13 +41,18 @@ async function close() {
 </script>
 
 <template>
-  <div class="fixed z-[100] bottom-0 left-0 p-4 w-full">
-    <div v-if="offlineReady || needRefresh" class="pwa-toast alert" role="alert">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-      <span v-if="offlineReady"> App ready to work offline </span>
+  <div class="fixed z-[100] bottom-16 left-0 p-4 w-full">
+    <div v-if="needRefresh" class="pwa-toast alert" role="alert">
+      <HandThumbUpIcon v-if="offlineReady && false" class="shrink-0 w-6 h-6" />
+      <InformationCircleIcon v-else class="shrink-0 w-6 h-6" />
+      <div v-if="offlineReady && false">
+        <h3 class="font-bold">Offline Ready</h3>
+        <span class="font-normal">This app can work while offline so you don't have to worry about network to do you work.</span>
+      </div>
+      <span v-if="offlineReady"></span>
       <span v-else> New content available, click <i>reload</i> to update. </span>
       <div>
-        <button class="btn btn-sm" @click="close">Ignore For Now</button>
+        <button class="btn btn-sm" @click="close">Later</button>
         <button class="btn btn-sm btn-primary" v-if="needRefresh" @click="updateServiceWorker()">Reload</button>
       </div>
     </div>

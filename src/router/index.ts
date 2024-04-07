@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '@/views/LoginView.vue';
 import LogoutView from '@/views/LogoutView.vue';
@@ -5,7 +7,7 @@ import BaseLayout from '@/views/BaseLayout.vue';
 import HomeView from '@/views/HomeView';
 import RetryView from '@/views/RetryView';
 import ProfileView from '@/views/ProfileView';
-import AboutView from '@/views/AboutView';
+// import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
 
@@ -44,17 +46,17 @@ const router = createRouter({
           name: 'profile',
           component: ProfileView,
         },
-        {
-          path: '/about',
-          name: 'about',
-          component: AboutView,
-        },
-        {
-          path: '/theme-preview',
-          name: 'theme-preview',
-          // @ts-ignore
-          component: () => import('../views/ThemeView.vue'),
-        },
+        // {
+        //   path: '/about',
+        //   name: 'about',
+        //   component: AboutView,
+        // },
+        // {
+        //   path: '/theme-preview',
+        //   name: 'theme-preview',
+        //   // @ts-ignore
+        //   component: () => import('../views/ThemeView.vue'),
+        // },
         {
           path: '/movements/new',
           name: 'movements-new',
@@ -71,10 +73,16 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  if (to.name === 'login') {
+    const authStore = useAuthStore();
+    if (authStore.isLoggedIn) {
+      next({ name: 'home' });
+    }
+  }
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     console.info('[router] beforeEach checking auth');
     const authStore = useAuthStore();
-    if (!authStore.isLoggedIn) {
+    if (!authStore.user) {
       next({ name: 'login' });
     }
   }

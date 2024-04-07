@@ -1,5 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
+// TODO this is not the best it could be some newer APIs exist for some browsers.
+
 export default function useOnlineStatus() {
   const isOnline = ref(navigator.onLine);
 

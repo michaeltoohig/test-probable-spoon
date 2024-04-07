@@ -1,3 +1,4 @@
+import '@types/jest';
 import { mount } from '@vue/test-utils';
 import HelloWorld from '../HelloWorld.vue';
 

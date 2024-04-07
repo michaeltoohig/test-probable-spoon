@@ -63,13 +63,21 @@
         <select
           v-model="movementCode"
           v-bind="movementCodeAttrs"
+          :disabled="!location"
           class="select select-primary w-full max-w-lg"
         >
           <option disabled selected>Select a movement code!</option>
-          <option v-for="mc in movementCodes" :key="mc.id" :value="mc.id">{{ mc.code }}</option>
+          <option v-for="mc in filteredMovementCodes" :key="mc.id" :value="mc.id">{{ mc.name }}</option>
         </select>
         <label v-if="'movement_code' in errors" class="label">
           <span class="label-text-alt text-red-500">{{ errors.movement_code }}</span>
+        </label>
+      </div>
+
+      <div class="form-control w-full max-w-lg col-span-2">
+        <label class="label cursor-pointer">
+          <span class="label-text">Filter Movement Codes</span> 
+          <input type="checkbox" v-model="showFilteredMovementCodes" class="checkbox" />
         </label>
       </div>
 
@@ -136,13 +144,11 @@ import useLocations from '../composables/useLocations';
 import useOnlineStatus from '../composables/useOnlineStatus';
 
 const router = useRouter();
-const queueStore = useRetryQueueStore();
+const retryStore = useRetryQueueStore();
 const notifyStore = useNotifyStore();
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const { isOnline } = useOnlineStatus();
-
-// Setup initial select values
 
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -218,16 +224,28 @@ const { errors, register, handleSubmit, handleReset, validateField } = useForm({
       return false;
     }
   },
-  async onSubmit(data) {
-    try {
-      await directus.items('Movements').createOne(data);
-      notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
-      router.push({ name: 'home' });
-    } catch (err) {
-      console.error(err);
-      notifyStore.notify('Something went wrong', NotificationType.Error);
-    } finally {
-      await queueStore.updateCount();
+  async onSubmit(data: any) {
+    // it appears isOnline is not respected as the service worker thinks it is online when testing.
+    if (isOnline) {
+      console.log('[Movement] Submitting online');
+      try {
+        await directus.items('Movements').createOne(data);
+        notifyStore.notify('Container movement recorded successfully', NotificationType.Success);
+        console.log('[Movement] Retrying queue post successsfull submit');
+        await retryStore.syncRetryQueue();
+        router.push({ name: 'home' });
+      } catch (err) {
+        console.error(err);
+        notifyStore.notify('Something went wrong. The request was added to the retry queue.', NotificationType.Error);
+        router.push({ name: 'retry' });
+      } finally {
+        await retryStore.getItems();
+      }
+    } else {
+      console.log('[Movement] Adding to retry queue offline');
+      await retryStore.addItem(data);
+      notifyStore.notify('The movement was added to retry queue.', NotificationType.Info);
+      router.push({ name: 'retry' });
     }
   },
 });
@@ -295,6 +313,33 @@ const setSelectedDate = (day: string) => {
     date.value = formatISO(sub(new Date(), { days: 1 }), { representation: 'date' });
   }
 };
+
+const selectedLocationType = computed(() => {
+  if (!location.value) return;
+  return locations.value.find((l) => l.id === location.value)?.type;
+});
+const showFilteredMovementCodes = ref(true);
+const filteredMovementCodes = computed(() => {
+  if (!selectedLocationType.value) return;
+  if (!showFilteredMovementCodes.value) return movementCodes.value;
+  if (selectedLocationType.value == 'customer') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('D'));
+  } else if (selectedLocationType.value == 'container-yard') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('T'));
+  } else if (selectedLocationType.value == 'workshop') {
+    return movementCodes.value.filter((mc) => mc.code.startsWith('SNTR'));
+  } else if (selectedLocationType.value == 'port') {
+    const loadCodes = movementCodes.value
+      .filter((mc) => mc.code.startsWith('L'))
+      .map((mc) => ({ ...mc, name: `${mc.name} - On Barge` }));
+    const transferCodes = movementCodes.value
+      .filter((mc) => mc.code.startsWith('T'))
+      .map((mc) => ({ ...mc, name: `${mc.name} - On Land` }));
+    return [...loadCodes, ...transferCodes];
+  } else {
+    return movementCodes.value;
+  }
+});
 </script>
 
 <style scoped lang="scss">

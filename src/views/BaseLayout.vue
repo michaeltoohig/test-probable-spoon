@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import NavBar from '../components/NavBar.vue';
 import NavBottom from '../components/NavBottom.vue';
+import AlertNoServiceWorker from '../components/AlertNoServiceWorker.vue';
+import OfflineNoticeBar from '../components/OfflineNoticeBar.vue';
 </script>
 
 <template>
   <header>
     <NavBar />
   </header>
-  <main style="margin-bottom: 64px; padding-bottom: 12px">
+  <OfflineNoticeBar />
+  <main class="mb-16">
+    <AlertNoServiceWorker />
     <RouterView />
   </main>
   <NavBottom />

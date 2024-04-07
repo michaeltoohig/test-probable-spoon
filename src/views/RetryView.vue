@@ -7,29 +7,36 @@
     </div>
 
     <div class="col-auto">
-
-      <div role="alert" class="alert shadow-lg">
+      <div v-if="isLoggedIn" role="alert" class="alert shadow-lg">
         <HandThumbUpIcon v-if="count === 0" class="h-6 w-6"/>
-        <ArrowPathIcon v-else-if="isSyncPendingRequests" class="h-6 w-6"/>
+        <ArrowPathIcon v-else-if="isSyncing" class="h-6 w-6"/>
         <InformationCircleIcon v-else class="h-6 w-6"/>
         <div class="w-full">
           <span v-if="count === 0">All container movements are submitted.</span>
-          <span v-else-if="!isSyncPendingRequests">{{ count }} container movements have not been submitted.</span>
+          <span v-else-if="!isSyncing">{{ count }} container movements have not been submitted.</span>
           <div v-else>
             <span>Submitting container movements.</span>
             <progress class="progress w-full"></progress>
           </div>
         </div>
-        <button class="btn btn-sm btn-primary" :disabled="count === 0 || isSyncPendingRequests" @click="syncPendingRequests">Sync Now</button>
+        <button class="btn btn-sm btn-primary" :disabled="count === 0 || isSyncing" @click="syncPendingRequests">Sync Now</button>
+      </div>
+      <div v-else role="alert" class="alert shadow-lg">
+        <InformationCircleIcon class="h-6 w-6"/>
+        <div class="w-full">
+          <span>You must login again. Then, you can submit these container movements.</span>
+        </div>
+        <router-link :to="{ name: 'login' }" class="btn btn-sm btn-warning">Login</router-link>
       </div>
 
       <div class="divider"></div>
 
       <div v-if="count > 0" class="overflow-x-auto">
-        <table class="table">
+        <table class="hidden md:table">
           <!-- head -->
           <thead>
             <tr>
+              <th class="px-2 max-w-[22px]"></th>
               <th>Container</th>
               <th>Area</th>
               <th>Location</th>
@@ -38,77 +45,134 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="hover" v-for="m in retries" :key="m.id">
-              <td>{{ m.data.container.code }}</td>
-              <td>{{ m.data.location.area.name }}</td>
-              <td>{{ m.data.location.name }}</td>
-              <td>{{ m.data.movement_code.code }}</td>
-              <td>{{ printDate(m.data.date_reported) }}</td>
+            <tr class="hover" v-for="retry in retries" :key="retry.id">
+              <td class="px-2 max-w-[22px]">
+                <label for="delete_retry_modal" @click="setSelected(retry)" class="btn btn-ghost btn-xs">
+                  <TrashIcon class="h-4 w-4" />
+                </label>
+              </td>
+              <td>{{ retry.data.container.code }}</td>
+              <td>{{ retry.data.location.area.name }}</td>
+              <td>{{ retry.data.location.name }}</td>
+              <td>{{ retry.data.movement_code.code }}</td>
+              <td>{{ printDate(retry.data.date_reported) }}</td>
             </tr>
           </tbody>
         </table>
+        <ul class="timeline timeline-vertical md:hidden">
+          <li v-for="retry in retries" :key="retry.id">
+            <hr />
+            <div class="timeline-start timeline-box shadow">
+              <div class="flex justify-between items-center">
+                <div class="badge badge-neutral">{{ retry.data.movement_code.code }}</div>
+                <label for="delete_retry_modal" @click="setSelected(retry)" class="btn btn-error btn-outline btn-xs">
+                  <TrashIcon class="h-4 w-4" />
+                </label>
+              </div>
+
+              <div class="card-title">{{ retry.data.container.code }}</div>
+              <div class="card-title">{{ retry.data.location.name }}</div>
+              <div class="card-subtitle">{{ retry.data.location.area.name }}</div>
+            </div>
+            <div class="timeline-middle">
+              <CheckCircleIcon class="w-5 h-5" />
+            </div>
+            <div class="timeline-end">
+              {{ printDate(retry.data.date_reported) }}
+            </div>
+            <hr />
+          </li>
+        </ul>
       </div>
+
+    </div>
+
+    <input type="checkbox" id="delete_retry_modal" class="modal-toggle" />
+    <div class="modal" role="dialog">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Remove From Retry Queue?</h3>
+        <ul class="py-4">
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Container:</span> {{ selected?.data.container.code }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Area:</span> {{ selected?.data.location.area.name }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">Location:</span> {{ selected?.data.location.name }}</li>
+          <li class="font-semilight tracking-wider"><span class="font-bold tracking-normal me-1">MC:</span> {{ selected?.data.movement_code.code }}</li>
+        </ul>
+        <div class="modal-action flex row justify-between">
+          <label for="delete_retry_modal" class="btn btn-error" @click="deleteSelected">
+            Delete
+          </label>
+          <label for="delete_retry_modal" class="btn">Close</label>
+        </div>
+      </div>
+      <label class="modal-backdrop" for="delete_retry_modal">Close</label>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useNotifyStore } from '../stores/notifyStore';
+import { onMounted, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { useRetryQueueStore } from '../stores/retryQueueStore';
 import useContainers from '../composables/useContainers';
 import useMovementCodes from '../composables/useMovementCodes';
 import useLocations from '../composables/useLocations';
-import { ArrowPathIcon, HandThumbUpIcon, InformationCircleIcon } from '@heroicons/vue/24/solid';
+import { ArrowPathIcon, CheckCircleIcon, HandThumbUpIcon } from '@heroicons/vue/24/solid';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { storeToRefs } from 'pinia';
+import { NotificationType, useNotifyStore } from '../stores/notifyStore';
+import { TrashIcon } from '@heroicons/vue/24/solid'
+import { deleteFromQueue } from '../service-worker/retry-queue';
+import { useAuthStore } from '../stores/authStore';
 
+const authStore = useAuthStore()
+const { isLoggedIn } = storeToRefs(authStore);
+const notifyStore = useNotifyStore();
 const retryStore = useRetryQueueStore();
+const { count, isSyncing } = storeToRefs(retryStore);
 
-const queueStore = useRetryQueueStore();
-const { count } = storeToRefs(queueStore);
+const selected = ref<RetryItem>();
+const setSelected = (item: RetryItem) => {
+  selected.value = item;
+};
+const deleteSelected = async () => {
+  if (!selected.value) return;
+  await deleteFromQueue(selected.value.id);
+  notifyStore.notify('Container movement successfully removed from retry queue', NotificationType.Info);
+  selected.value = undefined;
+  await getRetryQueue();
+}
 
-const isSyncPendingRequests = ref(false);
 const syncPendingRequests = async () => {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      command: 'SYNC',
-    });
-    isSyncPendingRequests.value = true;
-    // TODO cancel timeout if success early
-    setTimeout(async () => {
-      await getRequests()
-      isSyncPendingRequests.value = false;
-    }, 2000);
-  }
+  console.log('[Retry] manually triggering retry queue');
+  await retryStore.syncRetryQueue();
 }
 
-function arrayBufferToJson(arrayBuffer: ArrayBuffer) {
-   const uint8Array = new Uint8Array(arrayBuffer);
-   const decoder = new TextDecoder();
-   const jsonString = decoder.decode(uint8Array);
-   return JSON.parse(jsonString);
-}
+watch(isSyncing, async (newValue: boolean) => {
+  if (!newValue) {
+    console.log('[Retry] Updating queue UI');
+    await getRetryQueue();
+  }
+});
 
 const { containers, promise: containerPromise } = useContainers();
 const { movementCodes, promise: movementCodesPromise } = useMovementCodes();
 const { locations, promise: locationsPromise } = useLocations();
 
-interface Retry {
+interface RetryItem {
   id: number;
   data: any;
 }
 
-const retries = ref<Retry[]>([]);
-const getRequests = async () => {
-  await retryStore.getRequests();
-  retries.value = retryStore.requests.map((r) => {
-    const data = arrayBufferToJson(r.requestData.body);
+const retries = ref<RetryItem[]>([]);
+const getRetryQueue = async () => {
+  await retryStore.getItems();
+  retries.value = retryStore.items.map((item) => {
+    const data = item.payload;
     data.container = containers.value.find((c) => c.id === data.container);
     data.movement_code = movementCodes.value.find((mc) => mc.id === data.movement_code);
     data.location = locations.value.find((l) => l.id === data.location);
     return {
-      id: r.id,
+      id: item.id,
       data: data,
     }
   });
@@ -118,7 +182,7 @@ onMounted(async () => {
   await containerPromise;
   await movementCodesPromise;
   await locationsPromise;
-  await getRequests()
+  await getRetryQueue()
 });
 
 const printDate = (value: string) => {

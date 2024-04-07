@@ -9,7 +9,9 @@ export default function useLocations() {
     .readByQuery({
       limit: -1,
       // @ts-ignore
-      fields: ['id', 'name', 'area.id', 'area.name'],
+      fields: ['id', 'name', 'area.id', 'area.name', 'type'],
+      // @ts-ignore
+      sort: 'name',
     })
     .then((resp: any) => {
       locations.value = resp.data;
@@ -17,8 +19,7 @@ export default function useLocations() {
     
   const areas = computed((): Area[] => {
     if (!locations.value) return []
-    // return Array.from(new Set(locations.value.map((loc) => loc.area)))
-    return locations.value.reduce((acc, loc) => {
+    return locations.value.reduce((acc: Area[], loc: Location) => {
       if (!acc.some((i) => i.id === loc.area.id)) {
         acc.push(loc.area);
       }

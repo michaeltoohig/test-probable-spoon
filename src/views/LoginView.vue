@@ -2,8 +2,18 @@
   <div class="login">
     <div class="relative flex flex-col justify-center h-screen overflow-hidden">
       <div class="w-full p-6 m-auto bg-base-200 rounded-md shadow-md sm:max-w-lg">
+        <AlertNoServiceWorker />
         <form @submit="handleSubmit" class="space-y-4">
-          <h1 class="text-3xl font-semibold">Login</h1>
+          <div class="flex justify-between items-center">
+            <div class="flex justify-start items-center">
+              <img :src="lorry" class="w-16 h-16" />
+              <h1 class="text-3xl font-semibold">Login</h1>
+            </div>
+            <router-link v-if="user" :to="{ name: 'home' }" class="btn btn-sm btn-outline btn-primary">
+              Skip
+              <ChevronRightIcon class="w-3 h-3" />
+            </router-link>
+          </div>
           <div class="form-control w-full max-w-lg">
             <label class="label">
               <span class="label-text">Email</span>
@@ -68,13 +78,17 @@
 </template>
 
 <script setup lang="ts">
+import lorry from '/lorry.svg?url';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useForm } from '@vorms/core';
 import { EMAIL_REGEX, useAuthStore } from '../stores/authStore';
+import type { CredentialsType } from '../stores/authStore';
+import AlertNoServiceWorker from '../components/AlertNoServiceWorker.vue';
+import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 
 const authStore = useAuthStore();
-const { error, loading } = storeToRefs(authStore);
+const { user, error, loading } = storeToRefs(authStore);
 
 const router = useRouter();
 
@@ -83,14 +97,10 @@ const { register, errors, handleSubmit } = useForm({
     email: '',
     password: '',
     remember: false,
-  },
+  } as CredentialsType,
   async onSubmit(values) {
-    try {
-      await authStore.login(values);
-      router.push({ name: 'home' });
-    } catch (err: any) {
-      console.log('xxx', err);
-    }
+    await authStore.login(values);
+    router.push({ name: 'home' });
   },
 });
 
