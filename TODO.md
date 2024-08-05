@@ -6,10 +6,6 @@
 - cache dynamic images
 - precache API endpoints
 
-## Typescript
-
-- learn this convoluted tsconfig thing and extension files like tsconfig.node tsconfig.vitest
-
 ## 2024-01-19
 
 - [x] sort out use of bgSyncPlugin or custom implementation (only 1 hour charge)
@@ -27,7 +23,6 @@
 
 - [x] Allow create movements while logged out and offline
 
-In some scenarios, uers accessing the app while offline will be hit with the login screen unable to record movements.
 The user should be able to make movements but they are stored in the queue until authenticated again.
 
  - [x] store user details in localStorage in JSON format

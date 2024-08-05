@@ -22,7 +22,7 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
       <img :src="lorry" class="w-16 h-16 -mt-6 -mb-4 mx-auto" />
       <span class="text-3xl font-bold">Drivers</span>
     </div>
-      
+
     <div
       @click="goToNewMovement"
       class="cursor-pointer card max-w-md bg-base-100 shadow-xl image-full mb-3"
@@ -36,19 +36,6 @@ const { installPromptAvailable } = storeToRefs(installPromptStore);
     </div>
 
     <CardInstallApp class="max-w-md mb-3" v-if="installPromptAvailable" />
-    
-    <div
-      v-if="false"
-      @click="goToNewMovement"
-      class="cursor-pointer card max-w-md bg-base-100 shadow-xl image-full mb-3"
-    >
-      <figure><img :src="containerMovementImgSrc" alt="Record New Container Movement" /></figure>
-      <div class="card-body w-full h-full flex justify-center align-center">
-        <h2 class="card-title text-3xl text-center self-center">
-          Install App Now!
-        </h2>
-      </div>
-    </div>
   </div>
 </template>
 

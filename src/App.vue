@@ -39,8 +39,8 @@ onBeforeMount(async () => {
   } else {
     // none exists
   }
-  
-  // XXX old logic for reference until confirm new auth flow working
+
+  // XXX: old logic for reference until confirm new auth flow working
   // if (isOnline && isLoggedIn.value) {
   //   try {
   //     await authStore.getMe();

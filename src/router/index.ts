@@ -7,7 +7,6 @@ import BaseLayout from '@/views/BaseLayout.vue';
 import HomeView from '@/views/HomeView';
 import RetryView from '@/views/RetryView';
 import ProfileView from '@/views/ProfileView';
-// import AboutView from '@/views/AboutView';
 import ReportMovementView from '@/views/ReportMovementView';
 import { useAuthStore } from '../stores/authStore';
 
@@ -46,11 +45,6 @@ const router = createRouter({
           name: 'profile',
           component: ProfileView,
         },
-        // {
-        //   path: '/about',
-        //   name: 'about',
-        //   component: AboutView,
-        // },
         // {
         //   path: '/theme-preview',
         //   name: 'theme-preview',

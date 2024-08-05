@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 export default function useInstallPromptEventListeners() {
   const store = useInstallPromptStore();
   const { defferedPrompt } = storeToRefs(store);
-  
+
   const beforeInstallPromptHandler = (event: Event) => {
     event.preventDefault();
     defferedPrompt.value = event;

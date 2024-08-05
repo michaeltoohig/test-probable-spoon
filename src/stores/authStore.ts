@@ -11,8 +11,6 @@ export const EMAIL_REGEX =
 
 interface AuthStoreState {
   last_page: string | null;
-  // user: UserType | null;
-  // avatar: string | null;
   loading: boolean;
   error: any;
 };
@@ -95,11 +93,6 @@ export const useAuthStore = defineStore('auth', {
         await directus.auth.login({ ...credentials });
         await this.getMe();
         return;
-        // if (this.last_page) {
-        //   // this.router.push(this.last_page);
-        // } else {
-        //   // this.router.push({ name: 'map' });
-        // }
       } catch (err: any) {
         // handle the error
         console.error('User Login Failed', err);

@@ -42,7 +42,6 @@
 
       <div class="hidden md:block overflow-x-auto">
         <table class="table">
-          <!-- head -->
           <thead>
             <tr>
               <th>MC</th>

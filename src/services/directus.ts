@@ -1,4 +1,3 @@
-// import { authentication, createDirectus, rest, readItem, readItems  } from "@directus/sdk";
 import { BaseStorage, Directus, ID } from '@directus/sdk';
 import { authToken } from '../stores/authStore';
 
@@ -60,7 +59,6 @@ class CustomStorage extends BaseStorage {
   }
 }
 
-// const directus = createDirectus<Schema>(import.meta.env.VITE_DIRECTUS_URL).with(rest()).with(authentication());
 // @ts-expect-error
 const directus = new Directus<Schema>(import.meta.env.VITE_DIRECTUS_URL, {
   storage: new CustomStorage(),

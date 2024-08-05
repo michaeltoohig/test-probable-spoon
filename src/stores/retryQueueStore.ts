@@ -59,7 +59,7 @@ export const useRetryQueueStore = defineStore('queue', {
           },
         });
         this.isSyncing = true;
-        // A failsafe to stop isSyncing in case of unexpected error from SW
+        // NOTE: A failsafe to stop isSyncing in case of unexpected error from SW
         this.isSyncingTimer = setTimeout(async () => {
           await this.setRetryComplete();
         }, 10000);

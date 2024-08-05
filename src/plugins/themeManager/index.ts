@@ -1,5 +1,6 @@
 import type { App } from 'vue';
 import { defaults, pluginInitiated, currentTheme, isDark } from './reactives';
+
 export const daisyThemes = ['winter', 'night'] as const;
 export type DaisyThemes = (typeof daisyThemes)[number];
 export type ThemeOptions = {
@@ -41,10 +42,12 @@ export const useThemeManager = () => {
     return document.documentElement.setAttribute('data-theme', (currentTheme.value = newTheme));
   };
   setTheme(currentTheme.value);
+
   // Get theme
   const getTheme = () => {
     return currentTheme.value;
   };
+
   // Toggle dark mode, using default light and dark themes
   const toggleDark = () => {
     const _light = defaults.light as DaisyThemes;
@@ -54,12 +57,14 @@ export const useThemeManager = () => {
       (currentTheme.value = currentTheme.value === _light ? _dark : _light)
     );
   };
+
   // Set default light and dark themes
   const setDefaults = (themes: { light?: DaisyThemes; dark?: DaisyThemes }) => {
     defaults.light = themes.light ?? defaults.light;
     defaults.dark = themes.dark ?? defaults.dark;
     setTheme('default');
   };
+
   // Get default light and dark themes
   const getDefaults = () => {
     return { light: defaults.light, dark: defaults.dark };

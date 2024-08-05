@@ -1,6 +1,6 @@
 <template>
   <div class="grid gap-4">
-    
+
     <div class="col-auto">
       <h2 class="text-2xl font-semibold leading-tight mb-0">Retry Queue</h2>
       <small class="text-lg font-light leading-tight mt-0">Container Movements Not Yet Saved</small>
@@ -33,7 +33,6 @@
 
       <div v-if="count > 0" class="overflow-x-auto">
         <table class="hidden md:table">
-          <!-- head -->
           <thead>
             <tr>
               <th class="px-2 max-w-[22px]"></th>

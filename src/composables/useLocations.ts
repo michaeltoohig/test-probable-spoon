@@ -16,7 +16,7 @@ export default function useLocations() {
     .then((resp: any) => {
       locations.value = resp.data;
     });
-    
+
   const areas = computed((): Area[] => {
     if (!locations.value) return []
     return locations.value.reduce((acc: Area[], loc: Location) => {

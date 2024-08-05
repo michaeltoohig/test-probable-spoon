@@ -9,7 +9,7 @@ interface OnRegisteredSWParams {
  r: ServiceWorkerRegistration | null;
 }
 
-// replaced dyanmicaly
+// replaced dynamically
 const reloadSW: any = '__RELOAD_SW__';
 
 const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW({
